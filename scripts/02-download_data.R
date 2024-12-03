@@ -1,26 +1,26 @@
 #### Preamble ####
-# Purpose: Downloads and saves the data from [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 11 February 2023 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: Downloads and saves the 2020 CCES data recorded by Schaffner, Brian et.al 
+# Author: Victor Ma
+# Date: 3 December 2024
+# Contact: victo.ma@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
-
 
 #### Workspace setup ####
-library(opendatatoronto)
+
+#install.packages("arrow")
 library(tidyverse)
-# [...UPDATE THIS...]
+library(dataverse)
+library(dplyr)
 
 #### Download data ####
-# [...ADD CODE HERE TO DOWNLOAD...]
-
-
+ces <-
+  get_dataframe_by_name(
+    filename = "CES20_Common_OUTPUT_vv.csv",
+    dataset = "10.7910/DVN/E9N6PH",
+    server = "dataverse.harvard.edu",
+    .f = read_csv
+  ) 
 
 #### Save data ####
-# [...UPDATE THIS...]
-# change the_raw_data to whatever name you assigned when you downloaded it.
-write_csv(the_raw_data, "inputs/data/raw_data.csv") 
+write_csv(ces, "data/01-raw_data/raw_data.csv")
 
-         

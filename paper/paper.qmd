@@ -1,16 +1,22 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Younger age groups, women, and lower levels of education are more likely to vote Democractic"
+subtitle: "A logistic regression analysis of demographics in the 2020 US Presidential Election"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
-date: today
+  - Victor Ma
+thanks: "Code and data are available at: https://github.com/bestmustard/Determinants-of-Political-Support-in-the-United-States."
+date: 03/16/2024
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "In this study, I investigate demographic patterns which influence political support for the US 2020 election, specifically focusing on whether demographics of people tend to vote for Joe Biden or Donald Trump. I use a logistic regression model with the variables age, gender, and education to predict which categories in each demographic have the highest chance of voting for Joe Biden. I find that the model accurately predicts the trend of younger people, women, and those with the lowest level of education being more likely to support Joe Biden."
 format: pdf
 number-sections: true
 bibliography: references.bib
+editor: 
+  markdown: 
+    wrap: 72
+    
+header-includes:
+ \usepackage{float}
+ \floatplacement{figure}{H}
 ---
 
 ```{r}
@@ -19,241 +25,438 @@ bibliography: references.bib
 #| message: false
 
 library(tidyverse)
-library(palmerpenguins)
+library(dataverse)
+library(knitr)
+library(modelsummary)
+library(rstanarm)
+library(tidybayes)
+library(dplyr)
+library(patchwork)
+library(ggplot2)
+library(broom.mixed)
+ces_data <- read_csv("../data/analysis_data/analysis_data.csv")
+ces_data$voted_for <- as_factor(ces_data$voted_for)
+ces_data$education <- factor(ces_data$education, levels = c("No HS", "High school graduate", "Some college", "2-year", "4-year", "Post-grad"))
 ```
-
 
 # Introduction
 
-Overview paragraph
+The 2020 United States presidential election was not only a pivotal political event but also a reflection of a nation grappling with unprecedented challenges. The backdrop of the COVID-19 pandemic, which affected millions and significantly altered everyday life, coupled with nationwide protests following the death of George Floyd, underscored the deep social and political divisions within the country [@KFF2020; @Cohn2020]. These events created a heightened sense of importance around the election that had potential to shape the direction of national policies. 2020 was a year of heightened misinformation and polarization, with many people challenging the electorate's ability to navigate complex issues and make informed decisions [@Lazer2018; @Allcott2017]. 
 
-Estimand paragraph
+Understanding how demographics are correlated with political alignment in such a pivotal year reveals a lot about societal trends. For example, younger voters might prioritize progressive issues like climate change and social justice, signal a shift towards liberalism. Older voters, emphasizing economic and healthcare concerns, show more conservative preferences. Gender disparities in voting reveal women's tilt towards equality-focused candidates, while varying education levels demonstrate that higher education correlates with liberal views, highlighting the role of informed decision-making in political orientation. This demographic analysis not only maps the political landscape of 2020 but also teaches us about evolving societal values.
 
-Results paragraph
+In this study I use a logistic regression model in order to predict which candidate will win more votes based on demographics such as age, gender, and level of education. The results of this model gives us key insights into how much demographic variables can influence voter preferences in a polarized climate. In particular, logistic regression models are used to model binary outcomes, so our outcome will be whether Joe Biden or Donald Trump is forecasted to have more votes. 
 
-Why it matters paragraph
+The data we are using is the 2020 Cooperative Election Study (CCES), an American stratified sample survey administered by YouGov [@ces2020]. The data is directly sourced from the Harvard dataverse, an online data repository running on the open-source web application dataverse. For my purposes I will be focusing on the variables of age, gender, and level of education as explanatory variables in the logistic regression model. I will also be referencing data from similar polls collected for the 2020 election, such as from American National Election Studies, Gallup Polls, and Pew Research Surveys [@ANES2020; @Pew2020; @Gallup2020]
 
-Telegraphing paragraph: The remainder of this paper is structured as follows. @sec-data....
+My report is structured into four main sections following the introduction. In the first section, I describe the data utilized for my analysis, highlighting the CCES 2020 dataset and presenting graphs that show the distribution of key demographic variables. The second section details the logistic regression model, including the rationale for its use and an interpretation of preliminary findings. Next I will analyse the demographic factors' impact on election outcomes through the use of graphs and specific numerics from my results. Finally, I discuss the implications of my findings, address potential weaknesses in my study, and suggest directions for future research. 
 
-
-
-
-
-
-# Data {#sec-data}
-
-## Overview
-
-We use the statistical programming language R [@citeR].... Our data [@shelter].... Following @tellingstories, we consider...
-
-Overview text
-
-## Measurement
-	
-Some paragraphs about how we go from a phenomena in the world to an entry in the dataset.
-
-## Outcome variables
-
-Add graphs, tables and text. Use sub-sub-headings for each outcome variable or update the subheading to be singular.
+This analysis is conducted using R, using several R packages to facilitate my analysis and presentation. This includes tidyverse for data manipulation and visualization, dataverse for accessing the CCES data, knitr for report generation, modelsummary for model interpretation, and rstanarm for Bayesian regression modeling [@citeR; @Dataverse; @Knitr; @Modelsummary; @Rstanarm; @Tidybayes; @Dplyr]. Some portions including ggplot graphs and the "Discussion" section were written with the help of ChatGPT4 @chatgpt. 
+\newpage
 
 
+# Data
+The dataset I used was the 2020 Cooperative Election Study (CCES) [@ces2020]. This data is provided by the Harvard dataverse and is conducted yearly as a survey of US political opinions, with the 2020 iteration including 61,000 respondents @ces2020. The release also includes a full guide to the data, and the questionnaires used. Vote validation was conducted by Catalist, a largescale organization with information on over 240 million individuals in the United States [@Catalist2017]. 
 
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
+## Strengths
 
-```{r}
-#| label: fig-bills
-#| fig-cap: Bills of penguins
-#| echo: false
+### Sample Size
 
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = "none") +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
-```
+Sources for @fig-respondents below: [@ANES2020],[@Pew2020],[@Gallup2020], [@ces2020].
 
-Talk more about it.
-
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
-
-```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
+```{r out.height="30%"}
+#| label: fig-respondents
+#| fig-cap: "Number of respondents for various 2020 election survey sources"
 #| echo: false
 #| warning: false
 #| message: false
 
-analysis_data <- read_csv(here::here("data/02-analysis_data/analysis_data.csv"))
+# Create a data frame with the number of respondents for each source
+survey_data <- data.frame(
+  Source = c("ANES 2020", "Pew Research", "Gallup Polls", "CCES 2020"),
+  Respondents = c(8280, 11818, 1000, 61000)
+)
 
-analysis_data |> 
-  ggplot(aes(x = width, y = length)) +
-  geom_point(alpha = 0.8) +
+# Generate the point graph
+ggplot(survey_data, aes(x = Source, y = Respondents)) +
+  geom_point(size = 5, color = "blue") +
   theme_minimal() +
-  labs(x = "Wing width (mm)",
-       y = "Wing length (mm)")
+  labs(
+    title = "Number of Respondents per Survey Source",
+    x = "Survey Source",
+    y = "Respondents"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Angle the x-axis text for readability
+
 ```
 
-Talk way more about it. 
 
-## Predictor variables
+From @fig-respondents, we can see that the CCES poll has the largest respondent pool compared to similar surveys. This ensures that analyses can be sufficiently granular, allowing us to analyze smaller subgroups that a smaller dataset may not represent accurately [@Ansolabehere2020].
 
-Add graphs, tables and text.
+### Data Collection Phases
+The CCES collected data in two waves, immediately before and after the 2020 election. This helps capture the shifts in voter attitudes and preferences during the critical final stages of the election campaign [@ces2020]. Pew Research and Gallup each conduct multiple polls of much smaller scale leading up to the election, which will give a snapshot in time of the voter sentiment but does not capture as broad of a perspective as the CES survey [@Pew2020], [@Gallup2020].
 
-Use sub-sub-headings for each outcome variable and feel free to combine a few into one if they go together naturally.
+### Sampling Methodology
+The sampling methodology and vote validation protocols are well outlined in the guide. This dataset employs sample matching, a two-step process designed to create a survey sample that represents a larger population as closely as possible. First, a sample that reflects the broader population (called the target sample) is selected based on certain characteristics like age, race, and gender. Then, for each person in this target sample, someone with the closest matching profile from a pool of survey volunteers is chosen. The match is based on many characteristics available in databases, ensuring the survey sample mirrors the target population.
 
+After the matched sample is created, it's given weights to adjust for any minor differences between it and the target population, ensuring the final results are representative. The weights are calculated in two stages using data from the American Community Survey and validated voter registration records, accounting for factors such as demographics and voter behaviors.
 
+The CES then uses state-level samples and compares them with actual election results to validate the sample's accuracy and the weighting process. If survey estimates closely align with the actual votes, it suggests that the CES sample is accurate and representative [@ces2020].
 
+This methodology is well fitted for the online opt-in nature of the survey, and helps combat the issues that arise with random or quota sampling which lead to results that are uncharacteristic of the target sample [@sample2007].
 
+## Limitations
+While the data is largely reliable, there exist some smaller errors and limitations. The guide details an error affecting 925 respondents from North Carolina, who were shown candidate names for incorrect districts. This could influence the accuracy of analyses related to House races, necessitating verification methods and adjustments in studies which focus on these aspects. 
 
+As with any survey-based research, the CCES 2020 relies on self-reported data, which can introduce biases such as social desirability bias or recall bias. Additionally, pre-election surveys may not capture last-minute shifts in voter sentiment, which is particularly relevant in a rapidly evolving and polarized political climate like that of 2020.
 
+The survey was conducted using an online survey platform hosted by YouGov [@ces2020]. Online surveys overcome geographical and physical barriers that traditional survey methods might face, allowing for more diverse participant engagement. However, certain demographic groups might be underrepresented in online panels due to varying levels of internet access and technological literacy, potentially introducing biases into the dataset. Additionally, the impersonal nature of online surveys could affect the quality of responses, since the lack of a direct interviewer may lead to less thoughtful answers from participants.
 
+## Variables of Interest
+The selection of age, gender, and education as predictor variables for analyzing political preference in the 2020 CCES data is informed by specific findings from prior research that shows their impact on voting behavior.
+
+### Age
+The impact of age on political preferences is significant, as demonstrated in the 2016 election context. An article by Pew Research (2018) shows that 58% of validated voters aged 18-29 voted for the Democratic Party (Hillary Clinton), compared to 28% voting Republican (Trump). These numbers slowly begin to favor Trump with older age groups, where 53% of validated voters aged 65+ voted for Trump and only 44% voted for Hillary Clinton [@2016votes]. Research by Iyengar and Krupenkin (2018) illustrates that younger voters, influenced by contemporary sociopolitical developments, exhibit a marked preference for progressive policies and candidates [@IyengarKrupenkin2018]. This tendency is often contrasted with older voters who may prioritize different issues based on their lived experiences. 
+
+### Gender
+The gender gap in political preferences is a well-documented phenomenon, with women more likely to support democratic candidates and policies, in particular social welfare and healthcare [@BoxSteffensmeier2004; @Dolan2014]. Pew Research found 11% more men voted for Trump compared to Clinton, while 16% more women chose the Democratic candidate Clinton [@2016votes].
+
+### Education
+Level of education is a strong predictor of political knowledge and ideological orientation. Individuals with higher education levels are generally more politically engaged, exhibit greater political efficacy, and tend to support liberal ideologies [@Highton2009]. We saw this play out in the 2016 election as generally college-grads were more favoured toward the Democratic Party, while remarkably more (64% vs. 28%) non-grads favoured Trump [@2016votes]. 
+
+## Data Preparation and Cleaning
+The 2020 CCES data was first obtained via the dataverse package directly from Harvard Dataverse, and then saved in parquet format using the arrow package for efficient storage and access [@arrow]. The cleaning process involved filtering for registered voters who chose either Biden or Trump, in order to treat presidential votes as a binary outcome. 
+
+The respondent variables (age, gender, and education) were transformed for clarity. Age was categorized into groups ("65+", "45-64", "30-44", "18-29"), gender was labeled ("Male", "Female"), and education levels were delineated ("No HS", "High school graduate", "Some college", "2-year", "4-year", "Post-grad"). These steps utilized the dplyr package for data manipulation.
+
+The cleaned dataset was then saved in both CSV and parquet formats.
+
+The distributions for each explanatory variable are illustrated in @fig-education and @fig-agegender below:
+
+```{r out.height="20%"}
+#| label: fig-education
+#| fig-cap: "Number of respondents for various 2020 election survey sources"
+#| echo: false
+#| warning: false
+#| message: false
+
+ggplot(ces_data, aes(x = education, fill = education)) +
+  coord_flip()+
+  geom_bar() +
+  scale_fill_brewer(palette = "Paired") + # More colors for distinction
+  theme_minimal() +
+  labs(title = "Respondents per Level of Education",
+       y = "Education Level",
+       x = "Count") +
+  theme(legend.title = element_blank()) 
+
+```
+
+```{r out.height="20%"}
+#| label: fig-agegender
+#| fig-cap: "Number of respondents for age group and gender"
+#| echo: false
+#| warning: false
+#| message: false
+# visualizing the age group distribution
+plot_age <- ggplot(ces_data, aes(x = age)) +
+  geom_bar(fill = "#FFA07A") +
+  theme_minimal() +
+  labs(title = "Respondents per Age Group", x = "Age Group", y = "Count") +
+  theme(legend.title = element_blank()) 
+
+# visualizing the gender distribution
+plot_gender <- ggplot(ces_data, aes(x = gender)) +
+  geom_bar(fill = "#778899") +
+  theme_minimal() +
+  labs(title = "Respondents per Gender", x = "Gender", y = "Count")+
+  theme(legend.title = element_blank()) 
+
+plot_age + plot_gender + plot_layout(ncol = 2)
+```
+
+@fig-education tells us that 4-year degree graduates are the most well represented in the polls, followed by high school graduates, people with some college, and then 2-year degree graduates. People who have not graduated high school are hardly represented at all.
+
+In @fig-agegender we see 45-64 being the most dominant age group, with much less representation in the 18-29 range. Also, about 20% more females participated in the study than males. 
+
+Below are some figures representing who people voted for based on their age and gender, followed by education level and gender.
+
+```{r out.height="20%"}
+#| label: fig-agevotes
+#| fig-cap: "Proportion of votes at each age group"
+#| echo: false
+#| warning: false
+#| message: false
+
+# Relationship between Age and Political Preferences
+ggplot(ces_data, aes(x = age, fill = voted_for)) +
+  geom_bar(position = "fill") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(title = "Age and Political Preferences", x = "Age Group", y = "Proportion")
+```
+@fig-agevotes shows a negative correlation between votes for Joe Biden and older age groups.
+```{r out.height="20%"}
+#| label: fig-gendervotes
+#| fig-cap: "Proportion of votes by gender"
+#| echo: false
+#| warning: false
+#| message: false
+ggplot(ces_data, aes(x = gender, fill = voted_for)) +
+  geom_bar(position = "fill") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(title = "Gender and Political Preferences", x = "Age Group", y = "Proportion")
+```
+We can see that in @fig-gendervotes, more women voted for Joe Biden than men. 
+
+```{r out.height="20%"}
+#| label: fig-educationvotes
+#| fig-cap: "Proportion of votes at each level of education"
+#| echo: false
+#| warning: false
+#| message: false
+# Relationship between Education and Political Preferences
+
+ggplot(ces_data, aes(x = education, fill = voted_for)) +
+  coord_flip()+
+  geom_bar(position = "fill") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(title = "Education and Political Preferences", x = "Education Level", y = "Proportion")
+```
+
+@fig-educationvotes is more interesting in the sense that the number of voters for Biden generally trends positively with higher levels of education, but the "No HS" and "Some College" groups had more votes for Biden respectively than the next level of education. It may be worth to note that "Some college" does not specify how much time they spent in college.
 
 # Model
 
-The goal of our modelling strategy is twofold. Firstly,...
+Logistic regression is a model used when the outcome or dependent variable is binary, which fits this scenario perfectly as we are modelling votes for Joe Biden vs. Donald Trump.
 
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+The regression model will calculate the log odds of the probability that a respondent votes for Joe Biden, and then map it to a probability between 0 and 1 through the logistic function.
 
+The standard logistic function $\sigma(t)$ for a real-valued input $t$ is defined as:
+
+```{=tex}
+\[ \sigma(t) = \frac{1}{1 + e^{-t}} \]
+```
+
+The graph of the logistic function is an S-shaped curve known as a sigmoid curve. It approaches 1 as $t$ goes to positive infinity and approaches 0 as $t$ goes to negative infinity.
+
+In logistic regression, the input $t$ is the linear combination of predictors including the intercept, which can be represented as $\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$. The logistic function then translates this into a probability that the dependent variable is 1 (voted for Joe Biden).
+
+In this situation, I will be using the predictors age, education, and gender and then applying the logistic function to get the probability $P(Y_i=1)$ that a respondent $i$ supports Joe Biden.
+
+This model is particularly strong at handling categorical dependent variables, which each of my explanatory variables fall under [@Hosmer2013].
+
+## Model Specification
+
+The logistic regression model is defined as:
+
+```{=tex}
+\[
+\log\left(\frac{P(Y_i=1)}{1 - P(Y_i=1)}\right) = \beta_0 + \beta_1X_{\text{age},i} + \beta_2X_{\text{education},i} + \beta_3X_{\text{gender},i}
+\]
+```
 ## Model set-up
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+- $Y_i$ is the binary indicator of support for the Democratic candidate Joe Biden (1) versus the Republican candidate Donald Trump (0) for respondent $i$.
+- $X_{\text{age},i}$, $X_{\text{education},i}$, and $X_{\text{gender},i}$ are the age, education level, and gender of respondent $i$, respectively.
+- $\beta_0$ represents the model intercept, while $\beta_1$, $\beta_2$, and $\beta_3$ are coefficients quantifying the effects of age, education, and gender on the likelihood of Democratic support. 
 
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
-
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+I fit my logistic regression model to the data using 'stan_glm()' function from the 'rstanarm' package in R [@citeR, @Rstanarm]. This function will automatically determine each of the $\beta$ coefficients in the model, using a smaller slice sample of 3000 from the 2020 CCES data we processed. This function also uses Bayesian logistic regression with the default priors from 'rstanarm'.
 
 
-### Model justification
+### Model Justification
 
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+In order to better interpret the results of the model, I can create a coefficient plot to visually see the effect sizes of the predictor variables on the likelihood of an individual supporting Biden. 
 
-We can use maths by including latex between dollar signs, for instance $\theta$.
+@fig-coefficient maps each predictor variable on the y-axis to an effect size and confidence interval on the x-axis. The effect size is the change in log-odds of supporting Biden for a one-unit increase in the predictor variable, which is essentially how much impact each demographic characterstic has an effect on voting for Biden. 
 
+The confidence intervals tell us the range within we can be confident that the true effect lies. Smaller confidence intervals means there is a higher level of precision in the estimate of the effect size. I am not as interested in the intervals that cross zero because that means that there is data to support each side (Biden or Trump) and so they are less statistically significant. 
 
-# Results
-
-Our results are summarized in @tbl-modelresults.
 
 ```{r}
+#| label: fig-coefficient
+#| fig-cap: "Coefficient plot of demographics"
 #| echo: false
-#| eval: true
 #| warning: false
 #| message: false
+political_preferences <- readRDS(file ="../models/political_preferences.rds")
 
-library(rstanarm)
+# Assuming `tidy_political_preferences` is a tidy version of your model with terms and estimate
+tidy_political_preferences <- tidy(political_preferences)
 
-first_model <-
-  readRDS(file = here::here("models/first_model.rds"))
+ggplot(tidy_political_preferences, aes(x = term, y = estimate)) +
+  geom_point(aes(color = estimate > 0), size = 3) +  # color points based on positive or negative coefficient
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +  #error bars
+  coord_flip() +  
+  scale_color_manual(values = c("blue", "red")) +  # Set colors for positive and negative coefficients
+  labs(title = "Joe Biden Support",
+       x = "Predictor Variables",
+       y = "Effect on Log Odds of Supporting Biden",
+       color = "Effect Direction") +
+  theme_minimal()  # Use a minimal theme
+
+# Ensure the 'tidy_political_preferences' contains the columns you want to summarize
+tidy_political_preferences <- broom::tidy(political_preferences)
+
+# Check available columns
+names(tidy_political_preferences)
 ```
 
-```{r}
+The conclusions I can draw from @fig-coefficient align with what I expected given the dataset. It's clear that higher education levels, specifically 4-year degrees and post-grad degrees, are positively associated with support for Biden. Higher age groups, specifically 45-64 and 65+, are strongly tied to voting for Trump. Men are less likely to vote for Biden than Women. 
+
+\newpage
+# Results
+
+Figures @fig-page, @fig-pgender, and @fig-pedu are recreations of the earlier graphs we saw showcasing the proportion of voters for Joe Biden by groups within each demographic, where the bar is the data from CCES 2020 while the point is the prediction generated by the model. 
+
+```{r out.height="25%"}
+#| label: fig-page
+#| fig-cap: "Model prediction for votes by age vs. CCES 2020 data"
 #| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
 #| warning: false
+#| message: false
+# Example constant values for the other factors
+constant_education <- "2-year" # Choose a representative value
+constant_gender <- "Male" # Choose a representative value
 
-modelsummary::modelsummary(
-  list(
-    "First model" = first_model
-  ),
-  statistic = "mad",
-  fmt = 2
+# Create a data frame for age predictions
+age_data <- data.frame(age = c("18-29", "30-44", "45-64", "65+"),
+                       education = constant_education,
+                       gender = constant_gender)
+
+# Predict probabilities for each age group
+age_data$predicted_prob <- predict(political_preferences, newdata = age_data, type = "response")
+library(ggplot2)
+# Actual proportions from the data
+ces_data_grouped <- ces_data %>%
+  group_by(age) %>%
+  summarize(Proportion_for_Biden = mean(voted_for == "Biden", na.rm = TRUE))
+
+# Assuming 'political_preferences' is your logistic regression model object and
+# 'age_data' contains the predicted probabilities with 'age' as a factor
+age_data$age <- factor(age_data$age, levels = c("18-29", "30-44", "45-64", "65+"))
+
+# Create a combined plot
+ggplot() +
+  geom_bar(data = ces_data_grouped, aes(x = age, y = Proportion_for_Biden, fill = age), 
+           stat = "identity", position = "dodge", alpha = 0.5) +
+  geom_point(data = age_data, aes(x = age, y = predicted_prob, color = age), 
+             position = position_dodge(width = 0.9), size = 3) +
+  scale_fill_brewer(palette = "Set1") + 
+  scale_color_brewer(palette = "Set1") + 
+  labs(title = "Actual vs. Predicted Support for Biden by Age Group",
+       x = "Age Group", y = "Proportion") +
+  theme_minimal() +
+  theme(legend.position = "none") 
+
+```
+
+```{r out.height="25%"}
+#| label: fig-pgender
+#| fig-cap: "Model prediction for votes by gender vs. CCES2020 data"
+#| echo: false
+#| warning: false
+#| message: false
+# Example constant values for the other factors (choose representative values for each)
+constant_age <- "30-44" # Assuming this is a middle category for age
+
+# Create a data frame for gender predictions
+gender_data <- data.frame(
+  gender = c("Male", "Female"),
+  education = constant_education, # Assuming you have a constant value set for education
+  age = constant_age
 )
+
+# Predict probabilities for each gender category
+gender_data$predicted_prob <- predict(political_preferences, newdata = gender_data, type = "response")
+
+# Create a data frame for education predictions
+education_data <- data.frame(
+  education = c("No HS", "High school graduate", "Some college", "2-year", "4-year", "Post-grad"),
+  gender = constant_gender, # Assuming you have a constant value set for gender
+  age = constant_age
+)
+
+# Predict probabilities for each education category
+education_data$predicted_prob <- predict(political_preferences, newdata = education_data, type = "response")
+
+# Actual proportions by gender
+ces_data_gender_grouped <- ces_data %>%
+  group_by(gender) %>%
+  summarize(Proportion_for_Biden = mean(voted_for == "Biden", na.rm = TRUE))
+
+# Actual proportions by education
+ces_data_education_grouped <- ces_data %>%
+  group_by(education) %>%
+  summarize(Proportion_for_Biden = mean(voted_for == "Biden", na.rm = TRUE))
+# Plot for Gender
+ggplot() +
+  geom_bar(data = ces_data_gender_grouped, aes(x = gender, y = Proportion_for_Biden, fill = gender), 
+           stat = "identity", position = "dodge", alpha = 0.5) +
+  geom_point(data = gender_data, aes(x = gender, y = predicted_prob, color = gender), 
+             position = position_dodge(width = 0.9), size = 3) +
+  scale_fill_brewer(palette = "Set2") + 
+  scale_color_brewer(palette = "Set2") + 
+  labs(title = "Actual vs. Predicted Support for Biden by Gender",
+       x = "Gender", y = "Proportion") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+```{r out.height="25%"}
+#| label: fig-pedu
+#| fig-cap: "Model prediction for votes by education level vs. CCES2020 data"
+#| echo: false
+#| warning: false
+#| message: false
+# Plot for Education
+ggplot() +
+  geom_bar(data = ces_data_education_grouped, aes(x = education, y = Proportion_for_Biden, fill = education), 
+           stat = "identity", position = "dodge", alpha = 0.5) +
+  geom_point(data = education_data, aes(x = education, y = predicted_prob, color = education), 
+             position = position_dodge(width = 0.9), size = 3) +
+  scale_fill_brewer(palette = "Set3") + 
+  scale_color_brewer(palette = "Set3") + 
+  labs(title = "Actual vs. Predicted Support for Biden by Education",
+       x = "Education Level", y = "Proportion") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Adjust text angle for readability
+
 ```
 
 
+By observation, it is evident that the model's prediction was fairly close to what the CCES data showed. The trend remains the same for each result. However, gender and education were predicted to have a higher sentiment of voting for Joe Biden while age had a lower sentiment. 
 
+It is worth nothing though that in @fig-page, all age categories showed polling data of above 50% to vote for Biden. Now with the lower average vote, the older age categories of "45-64" and "65+" are leaning towards Trump. On @fig-pedu for the lower education groups, the "No-HS" group which was at just about 50% is now above it, and the "High School Graduate" is also closer to voting for Biden. While this may seem marginal, close elections where voter sentiment is close to 50% would be largely impacted by changes like this. Although ultimately this is not an accurate predictor for who would win the election, only which groups would vote for who.
 
 # Discussion
 
-## First discussion point {#sec-first-point}
+This analysis demonstrates the demographics play in political preferences, with results that align with the existing literature. Our data suggests that age, education, and gender significantly influence electoral outcomes. In particular, the model's predictions closely mirrored CCES 2020 data trends, reinforcing the importance of these variables in understanding voter behavior. High education and younger ages showed high correlation with voting for joe biden.
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+It is important to note that based on the sample size of our data (as seen in @fig-education and @fig-agegender), the majority age groups which participated in the survey were "45-64" and "65+", while the variables of education and gender were much more closer together. If this were representative of the actual population then it would suggest that the age groups are skewed more towards those that support Trump, so despite most of the proportions being towards Biden, it can be a lot more nuanced of there are more groups in demographics that support Trump. 
 
-## Second discussion point
+The demographic trends observed in our analysis, specifically the tendency of younger voters, women, and individuals with higher educational attainment towards supporting Joe Biden, mirror broader societal shifts. These findings align with historical patterns where demographic attributes have increasingly become predictors of political alignment. For instance, the growing political polarization along educational lines has been well-documented, with individuals possessing higher educational qualifications tending to support more progressive policies and candidates [@Dalton2020].
 
-Please don't use these as sub-heading labels - change them to be what your point actually is.
+Moreover, the gender gap in political preferences is not a novel phenomenon. Women have been consistently more likely to vote for Democratic candidates in recent elections, a trend that has been attributed to differing policy priorities, including healthcare, reproductive rights, and social welfare [@Schaffner2018]. The 2020 election further highlighted this divide, as issues such as women's rights and gender equality took center stage, prompting a significant mobilization among female voters [@Coffe2020].
 
-## Third discussion point
+Age demographics have also played a critical role in shaping the political landscape. The engagement and political leanings of younger voters have been subjects of extensive study, particularly given their inclination towards progressive and liberal policies. This has been partly driven by generational differences in value systems, with younger cohorts exhibiting greater concern for issues such as climate change, social justice, and economic inequality [@Norris2021]. The 2020 election underscored the importance of the youth vote, which showed overwhelming support for Biden, reflecting a broader trend of political mobilization among younger Americans in response to current socio-political challenges [@Smith2020].
 
-## Weaknesses and next steps
+The implications of these demographic trends extend beyond electoral outcomes. They signal shifting societal values and priorities, with potential long-term impacts on policy direction and political discourse. For instance, the increasing support for progressive policies among younger and more educated demographics may influence the policy agendas of political parties and candidates in future elections [@Inglehart2020].
 
-Weaknesses and next steps should also be included.
+It's also crucial to note the limitations of relying solely on demographic variables to predict electoral outcomes. While age, education, and gender provide significant insights, the complex interplay of socio-economic factors, geographic location, and individual experiences also plays a crucial role in shaping political preferences. Future research should aim to incorporate a broader range of variables to capture the complexity of voter behavior more accurately.
 
+Our analysis contributes to the growing body of literature on demographic influences on political preferences, offering valuable insights into the dynamics of the 2020 U.S. presidential election. As the nation continues to navigate through periods of significant social and political change, understanding the demographic underpinnings of electoral outcomes will remain a critical area of study.
+
+# Weaknesses and Next Steps
+Although valuable, this study provides an intriguing analysis of how demographic influences affect political preferences; however, there are additional limitations to consider. Firstly, the study's analysis model, which used logistic regression, may have simplified the understanding of complex dynamics and could have overlooked some interactions between demographic variables that would provide a better understanding of voter behavior. Future research could utilize more advanced tools, such as multilevel or mixed-effects models, to more accurately capture the interplay of these demographic variables.
+
+Secondly, while detailed, the study's dataset may not fully account for the subtleties in voter behavior across all demographics. For example, the impact of regional urban-rural political contexts on voting patterns could have nuances beyond the current analysis's reach. Incorporating geographic and socioeconomic variables could further improve and strengthen the model, offering deeper insight into the electoral impact of demographic factors.
+
+Lastly, the study's focus on the 2020 election, though timely, limits its ability to capture longitudinal trends in voter behavior. A comparative analysis developed over multiple election cycles might reveal changes in demographic influences on political preferences over time, providing a richer context for interpreting the 2020 election results. In summary, this paper not only sheds light on the demographic determinants of voter preferences in a pivotal election year but also encourages reflection on the broader societal shifts these patterns indicate. As America faces deep social and political challenges, understanding the demographic underpinnings of political allegiance becomes increasingly important. Further research, building on the insights provided in this paper and addressing the weaknesses outlined, has the potential to offer even better explanations of the complex tapestry of American electoral politics.
 \newpage
-
-\appendix
-
-# Appendix {-}
-
-
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
-
-```{r}
-#| eval: true
-#| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
-
-pp_check(first_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
-
-posterior_vs_prior(first_model) +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom") +
-  coord_flip()
-```
-
-## Diagnostics
-
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
-
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
-
-```{r}
-#| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: fig-stanareyouokay
-#| fig-cap: "Checking the convergence of the MCMC algorithm"
-#| fig-subcap: ["Trace plot", "Rhat plot"]
-#| layout-ncol: 2
-
-plot(first_model, "trace")
-
-plot(first_model, "rhat")
-```
-
-
-
-\newpage
-
 
 # References
-
-
