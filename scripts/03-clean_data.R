@@ -1,7 +1,7 @@
 #### Preamble ####
 # Purpose: Cleans the raw 2020 CCES data recorded by Schaffner, Brian et.al 
 # Author: Victor Ma
-# Date: 03 December 2024
+# Date: 3 December 2024
 # Contact: victo.ma@mail.utoronto.ca
 
 #### Workspace setup ####
