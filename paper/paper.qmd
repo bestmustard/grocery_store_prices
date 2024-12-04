@@ -3,8 +3,8 @@ title: "Younger age groups, women, and lower levels of education are more likely
 subtitle: "A logistic regression analysis of demographics in the 2020 US Presidential Election"
 author: 
   - Victor Ma
-thanks: "Code and data are available at: https://github.com/bestmustard/Determinants-of-Political-Support-in-the-United-States."
-date: 03/16/2024
+thanks: "Code and data are available at: https://github.com/bestmustard/political_support"
+date: 12/3/2024
 date-format: long
 abstract: "In this study, I investigate demographic patterns which influence political support for the US 2020 election, specifically focusing on whether demographics of people tend to vote for Joe Biden or Donald Trump. I use a logistic regression model with the variables age, gender, and education to predict which categories in each demographic have the highest chance of voting for Joe Biden. I find that the model accurately predicts the trend of younger people, women, and those with the lowest level of education being more likely to support Joe Biden."
 format: pdf
@@ -36,7 +36,7 @@ library(ggplot2)
 library(broom.mixed)
 library(GGally)
 
-ces_data <- read_csv("../data/02-analysis_data/analysis_data.csv")
+cleaned_data <- read_csv("../data/02-analysis_data/analysis_data.csv")
 ```
 
 # Introduction
@@ -76,7 +76,7 @@ The dataset for this analysis is the 2020 Cooperative Election Study (CCES) [@ce
 
 ### Sample Size
 
-Sources for @fig-respondents below: [@ANES2020],[@Pew2020],[@Gallup2020], [@ces2020].
+Sources for @fig-respondents below: [@ANES2020],[@Pew2020],[], [@ces2020].
 
 ```{r out.height="30%"}
 #| label: fig-respondents
@@ -297,25 +297,116 @@ Rural areas show higher proportions of unemployed and permanently disabled indiv
 
 Part-time work and temporary layoffs are distributed fairly evenly across living environments, suggesting they are less influenced by geographic location.
 
+```{r out.height="20%"}
+#| label: fig-incomevotes
+#| fig-cap: "Votes for Biden at each level of income"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Correcting the order of income levels ####
+income_summary <- income_summary |> 
+  mutate(
+    income = factor(
+      income,
+      levels = c("< 10k", "10-50k", "50-100k", "100-200k", "200-500k", "> 500k")
+    )
+  )
+
+#### Create the corrected point plot ####
+ggplot(income_summary, aes(x = income, y = proportion_biden)) +
+  geom_point(size = 3, color = "blue") + # Plot points only
+  theme_minimal() +
+  labs(
+    title = "Proportion of Votes for Biden by Income Level",
+    x = "Income Level",
+    y = "Proportion Voting for Biden"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) # Display y-axis as percentages
+
+
+```
+@fig-incomevotes shows that voting for Biden does not seem to have a correlation with voting for Biden.
+
+```{r out.height="20%"}
+#| label: fig-employmentvotes
+#| fig-cap: "Votes for Biden at each employment level"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Calculate proportions for employment ####
+employment_summary <- cleaned_data |>
+  group_by(employment) |>
+  summarize(
+    proportion_biden = mean(voted_for == "Biden"),
+    .groups = "drop"
+  )
+
+#### Create point plot for employment ####
+ggplot(employment_summary, aes(x = employment, y = proportion_biden)) +
+  geom_point(size = 3, color = "blue") +
+  theme_minimal() +
+  labs(
+    title = "Proportion of Votes for Biden by Employment Status",
+    x = "Employment Status",
+    y = "Proportion Voting for Biden"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Optional: Rotate x-axis labels
+
+```
+@fig-employmentvotes shows that the greatest number of voters for Biden were Students, and it seems to decrease with higher employment levels. However, all categories still favor Biden.
+
+```{r out.height="20%"}
+#| label: fig-livingvotes
+#| fig-cap: "Votes for Biden based on residency"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Calculate proportions for living area ####
+living_summary <- cleaned_data |>
+  group_by(living) |>
+  summarize(
+    proportion_biden = mean(voted_for == "Biden"),
+    .groups = "drop"
+  )
+
+#### Create point plot for living area ####
+ggplot(living_summary, aes(x = living, y = proportion_biden)) +
+  geom_point(size = 3, color = "blue") +
+  theme_minimal() +
+  labs(
+    title = "Proportion of Votes for Biden by Living Area",
+    x = "Living Area",
+    y = "Proportion Voting for Biden"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Optional: Rotate x-axis labels
+
+```
+
+@fig-livingvotes shows a direct correlation between the density of peoples' living area and their probability of voting for Biden. People in the city had a high chance of voting Biden, while rural is much lower.
+
 # Model
 
-The goal of this logistic regression model is to predict whether a respondent votes for Joe Biden (1) or Donald Trump (0) based on employment status, income level, and living environment.
+This report presents a logistic regression model to predict whether a respondent voted for Joe Biden (1) or Donald Trump (0), based on their employment status, income level, and living environment. The analysis uses Bayesian logistic regression implemented in R with the rstanarm package. The model's performance is evaluated through various validation techniques, including train-test splits, posterior predictive checks, and sensitivity analyses.
 
-The model calculates the log odds of a respondent voting for Joe Biden and maps it to a probability between 0 and 1 using the logistic function. This function, $\sigma(t)$, is defined as:
+For this analysis, the predictors are employment status, income level, and living environment. These variables are passed through the logistic function to estimate $P(Y_i=1)$, the probability that respondent $i$ votes for Joe Biden.
 
 ```{=tex}
 \[ \sigma(t) = \frac{1}{1 + e^{-t}} \]
 ```
+## Implementation
 
-The logistic function produces an S-shaped sigmoid curve, which asymptotically approaches 1 as $t$ increases and 0 as $t$ decreases. In logistic regression, the input $t$ is modeled as a linear combination of predictors (including an intercept), expressed as $\beta_0 + \beta_1X_1 + \beta_2X_2 + \dots + \beta_nX_n$. This transforms the predictors into probabilities of the binary outcome.
-
-For this analysis, the predictors are employment status, income level, and living environment. These variables are passed through the logistic function to estimate $P(Y_i=1)$, the probability that respondent $i$ votes for Joe Biden.
-
-Logistic regression is well-suited for categorical and binary-dependent variables, and the explanatory variables in this study are categorical, making it an appropriate choice [@Hosmer2013].
+The model is implemented using R, leveraging the rstanarm package for Bayesian logistic regression. The data was preprocessed using the tidyverse package. Model outputs and intermediate steps are saved in .rds format for reproducibility [@citeR, @Rstanarm]. The model was implemented using the stan_glm() function, which applies Bayesian logistic regression with default priors and estimates the $\beta$ coefficients for the predictors. The model was fit to a subset of 3000 respondents from the 2020 CCES data processed earlier.
 
 ## Model Specification
 
-The logistic regression model is specified as follows:
+The logistic function produces an S-shaped sigmoid curve, which asymptotically approaches 1 as $t$ increases and 0 as $t$ decreases. In logistic regression, the input $t$ is modeled as a linear combination of predictors (including an intercept), expressed as $\beta_0 + \beta_1X_1 + \beta_2X_2 + \dots + \beta_nX_n$. This transforms the predictors into probabilities of the binary outcome.
+
+The model is defined as:
 
 ```{=tex}
 \[
@@ -323,36 +414,421 @@ The logistic regression model is specified as follows:
 \]
 ```
 
-## Model Setup
-$Y_i$: Binary indicator of support for Joe Biden (1) or Donald Trump (0) for respondent $i$.
-$X_{\text{employment},i}$: Employment status of respondent $i$.
-$X_{\text{income},i}$: Income level of respondent $i$.
-$X_{\text{living},i}$: Living environment of respondent $i$.
-$\beta_0$: Intercept of the model.
-$\beta_1$, $\beta_2$, $\beta_3$: Coefficients quantifying the impact of employment, income, and living environment, respectively, on the likelihood of supporting Joe Biden.
-Model Fitting
-The model was implemented using the stan_glm() function from the rstanarm package in R [@citeR, @Rstanarm]. This function applies Bayesian logistic regression with default priors and estimates the $\beta$ coefficients for the predictors. The model was fit to a subset of 3000 respondents from the 2020 CCES data processed earlier.
+$Y_i$: Binary response indicating vote for Biden (1) or Trump (0).
+
+$X_{\text{employment},i}$: Employment status.
+
+$X_{\text{income},i}$: Income level.
+
+$X_{\text{living},i}$: Living environment.
+
+$\beta_0$: Intercept term.
+
+$\beta_1$, $\beta_2$, $\beta_3$: Coefficients for predictors.
+
+The log-odds are transformed into probabilities using the logistic function:
+```{=tex}
+
+\[
+P(Y_i=1) = \frac{1}{1 + e^{-t}}
+\]
+```
+
+where $t = \beta_0 + \beta_1X_{\text{employment},i} + \beta_2X_{\text{income},i} + \beta_3X_{\text{living},i}$.
+
+## Justification
+
+Logistic regression is well-suited for categorical and binary-dependent variables, and the explanatory variables in this study are categorical, making it an appropriate choice [@Hosmer2013]. Employment, income, and living environment are socio-economic factors that significantly influence voting preferences. These variables are categorical, making logistic regression suitable for analyzing their relationship with a binary outcome. The model avoids unnecessary complexity by focusing on these key variables while maintaining interpretability. Priors ($\beta_0, \beta_k \sim \text{Normal}(0, 2.5)$) are weakly informative, ensuring coefficients are regularized without unduly constraining the model [@Gelman2008].
+
+The dataset is split into 70% training and 30% test sets to validate out-of-sample performance. This ensures the model generalizes well to unseen data. The ROC (Receiver Operating Characteristic) curve is a graphical representation of the model's ability to distinguish between the two classes: votes for Biden (1) and Trump (0). It plots the true positive rate (sensitivity) against the false positive rate (1-specificity) at various threshold settings. The AUC (Area Under the Curve) quantifies the overall ability of the model to discriminate between the classes. An AUC of 1.0 indicates perfect discrimination, while 0.5 indicates no better performance than random guessing.
+
+Posterior predictive checks ensure the model fits the data well by comparing simulated outcomes to observed data. This helps evaluate whether the model appropriately represents the underlying data distribution. The residual histogram shows the distribution of residuals, representing the differences between observed and predicted values. The residuals are distributed symmetrically around zero, which suggests that the model does not exhibit significant bias in its predictions. The histogram shows two peaks, one slightly negative and the other slightly positive. This may indicate that the model performs differently for different subsets of the data (e.g., voters for Biden vs. Trump). This could reflect the nature of binary logistic regression, where predictions are pushed toward 0 or 1. The spread of residuals is relatively narrow, with most values falling between -0.5 and 0.5. This suggests that the model's predictions are not overly far from the observed values.
+
+Underlying assumptions include the linearity of predictors on the log-odds scale, independence of observations, and the assumption that predictors adequately capture variability in the data. Limitations include the categorical nature of the predictors, which may lose finer granularity, and the potential omission of confounders such as race or education level. The model may be less appropriate in cases where relationships are highly non-linear or involve strong interaction effects. Alternatives considered include random forests, which are more flexible but lack interpretability, and multinomial logistic regression, which was unnecessary for this binary outcome. Logistic regression was chosen for its balance of simplicity, interpretability, and compatibility with the data structure.
+
+The validation process includes a train-test split to ensure generalization to new data, ROC Curve and AUC to demonstrate the model's discrimination ability with a moderate AUC value, posterior predictive checks to validate that simulated outcomes align well with observed data, and residual analysis to confirm model assumptions and identify any misfit. These steps confirm the robustness and reliability of the logistic regression model for political preferences.
 
 
-### Model Justification
+# Results
 
-#### Predictors
+The analysis reveals clear patterns in the relationship between socio-economic predictors and voting preferences in the 2020 U.S. Presidential Election. Employment, income, and living environment significantly influence political alignment. The coefficients in @tbl-logit_summary display the impact of each predictor on the likelihood of voting for Joe Biden versus Donald Trump.
 
-Employment, income, and living environment are socio-economic factors that have significant influence on voting preferences, as discussed in the data section.
+```{r}
+#| label: tbl-model_summary
+#| tbl-cap: "Coefficient Summary of the Logistic Regression Model"
+#| echo: false
+#| warning: false
+#| message: false
 
-These variables are categorical, making logistic regression a suitable choice for analyzing the relationship with a binary outcome.
+# Extract coefficients and statistics into a data frame
+model_summary_df <- broom::tidy(political_preferences, conf.int = TRUE) %>%
+  dplyr::select(term, estimate, std.error, conf.low, conf.high) %>%
+  dplyr::rename(
+    Parameter = term,
+    Mean = estimate,
+    `Standard Error` = std.error,
+    `Lower 95% CI` = conf.low,
+    `Upper 95% CI` = conf.high
+  )
 
-#### Complexity
+# Use kable to format the summary table
+kable(model_summary_df, format = "markdown", align = "c", col.names = c("Parameter", "Mean", "Standard Error", "Lower 95% CI", "Upper 95% CI"))
 
-The model avoids unnecessary complexity by focusing on key variables while maintaining interpretability.
+```
 
-#### Bayesian Framework
+The intercept shows the baseline log-odds of voting for Biden when all predictors are at their reference level (e.g., baseline employment group, income group, and living environment).
 
-Priors ($\beta_0, \beta_k \sim \text{Normal}(0, 2.5)$) are weakly informative, ensuring coefficients are regularized without unduly constraining the model [@Gelman2008].
+### Employment
 
-#### Visualizations
+Positive coefficients (e.g., employmentStudent) indicate that being in this group increases the likelihood of voting for Biden compared to the reference group (employmentFull-time).
 
-Visualizing the relationships between predictors and voting preferences justifies their inclusion. This is shown in @fig-proportions. The heatmap @fig-heatmap-employment-living shows the correlation between the factors.
+Negative coefficients (e.g., employmentTemporarily laid off) suggest a decreased likelihood of voting for Biden compared to the reference group.
+
+### Income
+
+Lower-income groups (e.g., income10-50k) have negative coefficients, suggesting these groups are less likely to vote for Biden compared to the reference category (income <10k).
+
+Higher-income groups (e.g., income>500k) also show decreased likelihood of voting for Biden, suggesting a possible U-shaped relationship between income and voting preference.
+
+### Living Environment
+
+Urban areas (livingCity, as reference) show the highest likelihood of voting for Biden. Suburbs and rural areas (livingSuburb, livingRural area) exhibit progressively stronger negative coefficients, indicating lower support for Biden.
+
+### Confidence Intervals
+
+The columns Lower 95% CI and Upper 95% CI show the range within which the true coefficient is likely to fall with 95% confidence. If this range does not include zero, the effect is statistically significant.
+
+```{r}
+#| label: fig-coefficient_intervals
+#| fig-cap: "90% Credible Intervals for Logistic Regression Coefficients"
+#| echo: false
+#| message: false
+#| warning: false
+
+library(bayesplot)
+posterior <- as.array(political_preferences)
+color_scheme_set("brightblue")
+
+mcmc_intervals(posterior, prob = 0.9) +
+  labs(
+    title = "Coefficient Estimates",
+    subtitle = "90% Credible Intervals",
+    x = "Coefficient Value",
+    y = "Predictors"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+The visualization in @fig-coefficient_intervals shows the 90% credible intervals for each predictor. Predictors with intervals that do not overlap zero indicate significant effects on voting preferences. For example, Living Environment: Rural exhibits a significant negative association with voting for Biden, while Income: <10k shows a strong positive effect.
+
+## Model Results
+
+The below bar graphs display the predicted support for different demographics with the other ones kept constant, with the green point showing the actual results as shown in @fig-incomevotes. 
+
+```{r}
+#| label: fig-income-overlay
+#| fig-cap: "Comparison of Predicted and Actual Support for Biden by Income Level"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Prediction data for income ####
+prediction_data <- tibble(
+  employment = "Full-time", # Keeping employment constant
+  living = "City",          # Keeping living location constant
+  income = factor(
+    c("< 10k", "10-50k", "50-100k", "100-200k", "200-500k", "> 500k"),
+    levels = c("< 10k", "10-50k", "50-100k", "100-200k", "200-500k", "> 500k")
+  )
+)
+
+# Predict probabilities
+predicted_probs_income <- posterior_epred(political_preferences, newdata = prediction_data) |>
+  colMeans()
+
+# Add predictions and odds
+prediction_data <- prediction_data |> 
+  mutate(
+    predicted_prob = predicted_probs_income,
+    odds = predicted_prob / (1 - predicted_prob)
+  )
+
+#### Calculate actual proportions ####
+actual_income <- cleaned_data |>
+  group_by(income) |>
+  summarize(
+    proportion_biden = mean(voted_for == "Biden"),
+    .groups = "drop"
+  )
+
+#### Combine actual and predicted data ####
+combined_income_data <- prediction_data |> 
+  left_join(actual_income, by = "income") |> 
+  mutate(
+    actual_odds = proportion_biden / (1 - proportion_biden) # Convert proportions to odds
+  )
+
+#### Overlayed Plot ####
+ggplot(combined_income_data) +
+  geom_bar(aes(x = income, y = odds), stat = "identity", fill = "steelblue", alpha = 0.6) + # Predicted odds
+  geom_point(aes(x = income, y = actual_odds), size = 3, color = "green") + # Actual odds
+  labs(
+    title = "Comparison of Predicted and Actual Support for Biden by Income Level",
+    x = "Income Level",
+    y = "Odds of Voting for Biden"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels
+
+
+```
+
+The predicted values in @fig-income-overlay are much lower likely due to the other demographics being set to "Full-time" and "City", but the trend in the results is the same.
+
+```{r}
+#| label: fig-employment-overlay
+#| fig-cap: "Comparison of Predicted and Actual Support for Biden by Employment"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Prediction data for employment ####
+employment_data <- tibble(
+  employment = factor(
+    c("Full-time", "Part-time", "Temporarily laid off", "Unemployed", 
+      "Retired", "Permanently disabled", "Homemaker", "Student"),
+    levels = c("Full-time", "Part-time", "Temporarily laid off", "Unemployed", 
+               "Retired", "Permanently disabled", "Homemaker", "Student")
+  ),
+  living = "City", # Keeping living constant
+  income = "< 10k" # Keeping income constant
+)
+
+# Predict probabilities
+predicted_probs_employment <- posterior_epred(political_preferences, newdata = employment_data) |>
+  colMeans()
+
+# Add predictions and odds
+employment_data <- employment_data |> 
+  mutate(
+    predicted_prob = predicted_probs_employment,
+    odds = predicted_prob / (1 - predicted_prob)
+  )
+
+#### Calculate actual proportions ####
+actual_employment <- cleaned_data |>
+  group_by(employment) |>
+  summarize(
+    proportion_biden = mean(voted_for == "Biden"),
+    .groups = "drop"
+  )
+
+#### Combine actual and predicted data ####
+combined_employment_data <- employment_data |> 
+  left_join(actual_employment, by = "employment") |>
+  mutate(
+    actual_odds = proportion_biden / (1 - proportion_biden) # Convert proportions to odds
+  )
+
+#### Plot for comparison ####
+ggplot(combined_employment_data) +
+  geom_bar(aes(x = employment, y = odds), stat = "identity", fill = "steelblue", alpha = 0.6) + # Predicted odds
+  geom_point(aes(x = employment, y = actual_odds), size = 3, color = "green") + # Actual odds
+  labs(
+    title = "Comparison of Predicted and Actual Odds of Voting for Biden by Employment Status",
+    x = "Employment Status",
+    y = "Odds of Voting for Biden"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+@fig-employment-overlay shows similarity in the general trend between the prediction and the actual data, with the exception of some of the middle values, where "Temporarily laid off" for example is lower than expected.
+
+```{r}
+#| label: fig-living-overlay
+#| fig-cap: "Overlay of Predicted Odds and Respondent Counts by Living Area"
+#| echo: false
+#| warning: false
+#| message: false
+
+#### Load model ####
+political_preferences <- readRDS("../models/political_preferences.rds")
+
+#### Prediction data ####
+# Creating a dataset for prediction
+prediction_data <- tibble(
+  employment = "Full-time", # Keeping employment constant
+  living = factor(
+    c("City", "Suburb", "Town", "Rural area"),
+    levels = c("City", "Suburb", "Town", "Rural area")
+  ),
+  income = "200-500k" # Keeping income constant
+)
+
+# Predict probabilities
+predicted_probs <- posterior_epred(political_preferences, newdata = prediction_data) |>
+  colMeans()
+
+# Calculate odds
+prediction_data <- prediction_data |> 
+  mutate(
+    predicted_prob = predicted_probs,
+    odds = predicted_prob / (1 - predicted_prob) # Convert probabilities to odds
+  )
+
+#### Actual data for respondent counts ####
+respondent_counts <- cleaned_data |> 
+  group_by(living) |> 
+  summarize(
+    count = n(),
+    .groups = "drop"
+  )
+
+#### Combine predicted and actual data ####
+combined_living_data <- prediction_data |> 
+  left_join(respondent_counts, by = "living")
+
+# Calculate scaling factor
+scaling_factor <- max(combined_living_data$count) / max(combined_living_data$odds)
+
+#### Overlayed plot ####
+ggplot(combined_living_data) +
+  geom_bar(aes(x = living, y = count), stat = "identity", fill = "steelblue", alpha = 0.6) + # Respondent counts
+  geom_point(aes(x = living, y = odds * scaling_factor), size = 3, color = "green") + # Scaled predicted odds
+  scale_y_continuous(
+    name = "Respondent Count",
+    sec.axis = sec_axis(~ . / scaling_factor, name = "Odds of Voting for Biden")
+  ) +
+  labs(
+    title = "Overlay of Predicted Odds and Respondent Counts by Living Area",
+    x = "Living Area"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+@fig-living-overlay shows the model has completely different predictions for the living areas, when employment is set to "Full-time" and income is in the "200-500k" range. 
+## Model Justification
+
+The ROC (Receiver Operating Characteristic) curve is a graphical representation of the model's ability to distinguish between the two classes: votes for Biden (1) and Trump (0). It plots the true positive rate (sensitivity) against the false positive rate (1-specificity) at various threshold settings.
+
+The AUC (Area Under the Curve) quantifies the overall ability of the model to discriminate between the classes. An AUC of 1.0 indicates perfect discrimination, while 0.5 indicates no better performance than random guessing.
+
+
+```{r out.height="30%"}
+#| label: fig-roc
+#| fig-cap: "ROC Curve for logistic regression model"
+#| echo: false
+#| warning: false
+#| message: false
+#### Workspace setup ####
+library(tidyverse)
+library(rstanarm)
+
+political_preferences <- readRDS(file ="../models/political_preferences.rds")
+# Train-test split
+set.seed(853)
+train_indices <- sample(1:nrow(cleaned_data), 0.7 * nrow(cleaned_data))
+train_data <- cleaned_data[train_indices, ]
+test_data <- cleaned_data[-train_indices, ]
+
+# Predictions on test data
+test_predictions <- posterior_predict(political_preferences, newdata = test_data)
+
+# ROC Curve and AUC
+library(pROC)
+roc_curve <- roc(test_data$voted_for, colMeans(test_predictions))
+auc(roc_curve)
+
+plot(roc_curve, main = "ROC Curve for Logistic Regression Model", col = "blue", lwd = 2)
+```
+
+The area under curve (AUC) value for the curve in @fig-roc is 0.6216. This indicates the model has moderate discriminatory power. It performs better than random guessing (AUC = 0.5) but falls short of strong predictive performance (AUC > 0.8).
+This suggests the predictors (employment status, income, and living environment) have some explanatory power but may not fully capture voting behavior.
+
+In terms of the shape of the curve, it deviates above the diagonal line (random chance), showing that the model can separate the two classes to some extent.
+
+However, the relatively shallow curve implies the model struggles to achieve high sensitivity without sacrificing specificity.
+
+The model is able to identify patterns in the data, distinguishing between Biden and Trump voters to a limited degree.
+The AUC value indicates that important predictors influencing voting behavior may be missing (e.g., race, education, or political affiliation).
+
+Further steps, such as feature engineering, adding interaction terms, or testing alternative models (e.g., random forests or support vector machines), may help enhance performance.
+
+```{r out.height="30%"}
+#| label: fig-pp
+#| fig-cap: "ROC Curve for logistic regression model"
+#| echo: false
+#| warning: false
+#| message: false
+# Generating Posterior Predictive Plot
+pp_check(political_preferences, plotfun = "dens_overlay") +
+  ggtitle("Posterior Predictive Check")
+```
+
+In @fig-pp, The observed data $y$ is represented by the solid curve.
+The replicated data $y_rep$ is represented by the shaded region, which encompasses the range of simulations based on the posterior distribution of the model parameters.
+
+The replicated data closely follows the observed data curve between values 0.25-0.75, and diverges more at the extremes. This suggests that the model struggles to fully capture the extreme probabilities of voting for Biden or Trump.
+
+The replicated data aligns more closely with the observed data in the middle of the probability range, indicating that the model performs better in areas of uncertainty where probabilities are closer to 50%.
+
+The mismatch at the extremes suggests that the model may not be adequately capturing respondents with very high or very low likelihoods of voting for either candidate. This could indicate the need for additional predictors to account for factors driving extreme probabilities.
+
+```{r out.height="30%"}
+#| label: fig-residual
+#| fig-cap: "ROC Curve for logistic regression model"
+#| echo: false
+#| warning: false
+#| message: false
+residuals <- residuals(political_preferences)
+ggplot(data.frame(residuals), aes(x = residuals)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of Residuals", x = "Residuals", y = "Frequency")
+```
+
+@fig-residual shows the distribution of residuals, which represent the differences between observed and predicted values. The residuals are distributed symmetrically around zero, which suggests that the model does not exhibit significant bias in its predictions. The histogram shows two peaks, one slightly negative and the other slightly positive. This may indicate that the model performs differently for different subsets of the data (e.g., voters for Biden vs. Trump). This could reflect the nature of binary logistic regression, where predictions are pushed toward 0 or 1. The spread of residuals is relatively narrow, with most values falling between -0.5 and 0.5. This suggests that the model's predictions are not overly far from the observed values. The PPC confirms the model is reasonable for the given data but highlights areas for improvement, particularly at the extremes of the outcome probabilities. While the residuals and PPC suggest the model captures the data trends reasonably well, additional predictors or refinements, such as interactions, may be necessary to improve the fit for subsets of the data.
+
+# Discussion
+
+This paper investigated the influence of socio-economic factors—employment status, income level, and living environment—on voting preferences during the 2020 U.S. Presidential Election. Utilizing the 2020 Cooperative Election Study (CCES) dataset, a logistic regression model was applied to predict support for Joe Biden versus Donald Trump. The model incorporated categorical predictors, regularized with Bayesian priors, to account for variability while ensuring interpretability. The model's predictors were carefully chosen to reflect significant socio-economic dimensions that shape voter behavior. Through robust statistical analysis, this study identified meaningful correlations between these predictors and political alignment, shedding light on broader socio-political dynamics in the United States.
+
+The statistical approach balanced complexity and interpretability, leveraging Bayesian regularization to mitigate overfitting while allowing for nuanced insights. By employing a logistic regression model, this paper directly modeled the binary nature of the voting outcome while retaining a clear interpretation of how each predictor contributed to the likelihood of voting for a particular candidate. The inclusion of categorical variables like employment, income, and living environment provided an avenue to explore how socio-economic realities translate into political preferences.
+
+## Insights 
+
+One key insight from this analysis is the continued significance of the urban-rural divide in American politics. Urban voters were far more likely to support Joe Biden, a trend consistent with existing literature on urban liberalism and rural conservatism [@Pew2020u]. Urban areas, characterized by higher population densities and greater economic and cultural diversity, often prioritize progressive policies such as environmental regulation, healthcare access, and social equity. Conversely, rural voters exhibited a marked preference for Donald Trump, reflecting a broader alignment with conservative policies, including lower taxation, gun rights, and traditional social values [@IyengarKrupenkin2018]. These findings underscore the stark political polarization between urban and rural constituencies, a division that has deepened over successive election cycles.
+
+Another critical takeaway is the nuanced role of income in shaping political preferences. Lower-income groups were more likely to support Biden, aligning with the Democratic platform's emphasis on social welfare programs, affordable healthcare, and economic redistribution. Middle-income groups displayed more mixed preferences, often reflecting a balance between economic self-interest and policy priorities. Interestingly, the wealthiest demographic groups exhibited reduced support for Biden, suggesting that concerns over Democratic tax policies and fiscal regulations may outweigh social considerations in shaping their voting behavior [@Frank2004; @Gelman2009]. This U-shaped relationship between income and voting patterns highlights the complexity of economic factors in political decision-making.
+
+Employment status further illuminated key dynamics in voter behavior. Students and retired individuals showed strong support for Biden, possibly due to generational policy preferences such as student debt relief and Social Security protection. Full-time workers demonstrated more balanced voting preferences, reflecting the diversity of this group in terms of socio-economic priorities. Notably, individuals in precarious employment situations, such as part-time or temporarily laid-off workers, leaned toward Biden, likely reflecting concerns over job security and healthcare access in the wake of the COVID-19 pandemic.
+
+## Weaknesses 
+
+While this study provides valuable insights, several limitations warrant discussion. First, the logistic regression model assumes linearity in the log-odds of the predictors, which may oversimplify complex interactions between socio-economic factors and voting behavior. Non-linear relationships or interaction effects, such as how income and employment jointly influence voting preferences, may be overlooked in this framework.
+
+The categorical representation of predictors, while simplifying interpretation, also introduces granularity constraints. For example, income categories like "50-100k" encompass a broad range of experiences that may differ substantially in their political implications. Similarly, the employment categories do not account for nuances such as industry type or job satisfaction, which could have significant effects on political alignment.
+
+Another limitation lies in the reliance on self-reported survey data. Self-reporting is subject to biases such as social desirability and recall inaccuracies, potentially skewing results [@Ansolabehere2012]. Furthermore, the cross-sectional nature of the CCES dataset captures voter preferences at a single point in time, making it difficult to assess the impact of dynamic political events or campaign strategies on voting behavior [@Gelman2009].
+
+Finally, the model does not account for regional variations within urban and rural categories. For instance, urban areas in different states may have distinct political leanings influenced by local economic conditions, cultural dynamics, or historical contexts. Ignoring these regional nuances may obscure important variations in the data.
+
+## Future Directions
+
+The findings of this paper open several avenues for future research. A key area for exploration is the temporal dimension of voting behavior. Incorporating longitudinal data could provide insights into how socio-economic factors interact with political events, economic cycles, or social movements to shape voting preferences over time. Such an approach would allow researchers to examine causal relationships rather than mere associations.
+
+Intersectionality is another promising direction. Investigating how combinations of factors—such as race, gender, and education—jointly influence voting behavior could yield a richer understanding of political alignment. For example, how do the political preferences of low-income individuals differ by gender or race? Addressing these questions would require a more granular dataset and advanced modeling techniques, such as hierarchical or multi-level models [@Highton2009].
+
+Methodologically, future studies could benefit from experimenting with non-linear models or machine learning approaches. These methods can capture complex relationships and interactions that traditional logistic regression might miss. For instance, decision tree-based algorithms or neural networks could identify non-obvious patterns in how socio-economic factors influence voting preferences, though at the cost of reduced interpretability.
+
+Finally, regional analyses could shed light on how local contexts mediate the relationship between socio-economic factors and voting behavior. For example, exploring how employment trends in manufacturing-heavy states compare to service-oriented urban centers could reveal additional layers of complexity in voter alignment. Incorporating regional economic data or policy differences could enhance the explanatory power of future models.
+
+In conclusion, while this paper highlights the significant role of socio-economic factors in shaping political preferences, it also underscores the need for more nuanced and dynamic approaches to understanding voter behavior. By addressing these limitations and pursuing the outlined future directions, researchers can build a more comprehensive and context-sensitive picture of the socio-political landscape.
 
 \newpage
 
