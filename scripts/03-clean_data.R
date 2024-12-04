@@ -55,6 +55,7 @@ cleaned_data <-
       levels = c("< 10k", "10-50k", "50-100k", "100-200k", "200-500k", "> 500k")
     )
   ) |>
+  drop_na(voted_for, living, employment, income) |> # Drop rows with NA in selected columns
   select(voted_for, living, employment, income)
 
 #### Save the data ####

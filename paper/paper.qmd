@@ -41,22 +41,36 @@ ces_data$education <- factor(ces_data$education, levels = c("No HS", "High schoo
 
 # Introduction
 
-The 2020 United States presidential election was not only a pivotal political event but also a reflection of a nation grappling with unprecedented challenges. The backdrop of the COVID-19 pandemic, which affected millions and significantly altered everyday life, coupled with nationwide protests following the death of George Floyd, underscored the deep social and political divisions within the country [@KFF2020; @Cohn2020]. These events created a heightened sense of importance around the election that had potential to shape the direction of national policies. 2020 was a year of heightened misinformation and polarization, with many people challenging the electorate's ability to navigate complex issues and make informed decisions [@Lazer2018; @Allcott2017]. 
+The 2020 United States presidential election was a landmark event that encapsulated a confluence of crises and societal shifts. Beyond the COVID-19 pandemic, which reshaped healthcare priorities and exposed systemic vulnerabilities, the election underscored debates about economic inequality, particularly as millions faced unemployment during the economic downturn [@Blustein2020; @BLS2020]. Climate change emerged as a defining issue, with voters increasingly prioritizing environmental policies in response to intensifying natural disasters [@IPCC2020].
 
-Understanding how demographics are correlated with political alignment in such a pivotal year reveals a lot about societal trends. For example, younger voters might prioritize progressive issues like climate change and social justice, signal a shift towards liberalism. Older voters, emphasizing economic and healthcare concerns, show more conservative preferences. Gender disparities in voting reveal women's tilt towards equality-focused candidates, while varying education levels demonstrate that higher education correlates with liberal views, highlighting the role of informed decision-making in political orientation. This demographic analysis not only maps the political landscape of 2020 but also teaches us about evolving societal values.
+Demographic shifts also played a critical role. The increasing influence of younger, more diverse voters highlighted generational and racial divides in political priorities [@Frey2020]. Meanwhile, changes in suburban voting patterns, particularly among college-educated women, illustrated the evolving dynamics of key swing areas [@Cook2020].
 
-In this study I use a logistic regression model in order to predict which candidate will win more votes based on demographics such as age, gender, and level of education. The results of this model gives us key insights into how much demographic variables can influence voter preferences in a polarized climate. In particular, logistic regression models are used to model binary outcomes, so our outcome will be whether Joe Biden or Donald Trump is forecasted to have more votes. 
+Another major factor was the unprecedented role of mail-in voting, which became a focal point for controversy amidst the pandemic and claims of election fraud. This shift in voting methods not only increased accessibility for millions but also fueled political and legal battles over election integrity [@NCSL2020]. Finally, the election was a litmus test for the resilience of democratic institutions in the face of misinformation, political polarization, and challenges to the legitimacy of results [@BenGurion2020; @Sunstein2020].
 
-The data we are using is the 2020 Cooperative Election Study (CCES), an American stratified sample survey administered by YouGov [@ces2020]. The data is directly sourced from the Harvard dataverse, an online data repository running on the open-source web application dataverse. For my purposes I will be focusing on the variables of age, gender, and level of education as explanatory variables in the logistic regression model. I will also be referencing data from similar polls collected for the 2020 election, such as from American National Election Studies, Gallup Polls, and Pew Research Surveys [@ANES2020; @Pew2020; @Gallup2020]
+Analyzing how living environments, employment status, and income levels correlate with political alignment in 2020 offers deep insights into societal trends. Research shows that urban residents tend to favor liberal candidates, reflecting the diversity and progressive social policies often prioritized in cities [@bishop2019bigsort]. Conversely, rural voters strongly supported Donald Trump, consistent with longstanding trends emphasizing traditional values and conservative policies [@cramer2016politics].
 
-My report is structured into four main sections following the introduction. In the first section, I describe the data utilized for my analysis, highlighting the CCES 2020 dataset and presenting graphs that show the distribution of key demographic variables. The second section details the logistic regression model, including the rationale for its use and an interpretation of preliminary findings. Next I will analyse the demographic factors' impact on election outcomes through the use of graphs and specific numerics from my results. Finally, I discuss the implications of my findings, address potential weaknesses in my study, and suggest directions for future research. 
+Employment status also played a key role. Data from the Cooperative Congressional Election Study (CCES, 2020) revealed that students and retirees, often focused on issues like education and healthcare, leaned more toward Joe Biden, while full-time workers, prioritizing economic stability, showed mixed preferences based on industry and region [@cces2020].
 
-This analysis is conducted using R, using several R packages to facilitate my analysis and presentation. This includes tidyverse for data manipulation and visualization, dataverse for accessing the CCES data, knitr for report generation, modelsummary for model interpretation, and rstanarm for Bayesian regression modeling [@citeR; @Dataverse; @Knitr; @Modelsummary; @Rstanarm; @Tidybayes; @Dplyr]. Some portions including ggplot graphs and the "Discussion" section were written with the help of ChatGPT4 @chatgpt. 
+Income disparities further highlighted political divides. Lower-income groups, grappling with economic inequality, largely supported Biden due to his policies on healthcare and social safety nets, as noted in Pew Research’s 2020 voter analysis. Higher-income voters, on the other hand, leaned Republican, particularly in rural and suburban settings, reflecting preferences for tax policies that align with their financial interests [@pew2020voteranalysis].
+
+These findings display the imapct of personal circumstances and political preferences, mapping not only the political landscape of 2020 but also providing a deeper understanding of the evolving priorities shaping voter behavior.
+
+In this study, I use a logistic regression model to predict which candidate—Joe Biden or Donald Trump—was more likely to receive votes based on factors such as living environment, employment status, and income levels. Logistic regression is particularly suited for this analysis as it models binary outcomes, allowing us to estimate the likelihood of a voter aligning with one candidate over the other. By focusing on these explanatory variables, the study provides valuable insights into how socioeconomic and regional demographics influenced voter preferences during one of the most polarized elections in modern history.
+
+The primary dataset for this study is the 2020 Cooperative Congressional Election Study (CCES), a stratified sample survey administered by YouGov and sourced from the Harvard Dataverse [@cces2020]. 
+
+Complementary insights are drawn from Pew Research Center’s 2020 voter analysis, which contextualizes demographic trends across key groups, and the Census Bureau’s Current Population Survey Voting and Registration Supplement, which provides aggregate statistics on voter turnout and demographic characteristics [@pew2020; @CPS2020]. These additional datasets validate findings from the CCES and enhance the robustness of our conclusions.
+
+My report is structured into five main sections and includes an appendix. After the introduction, the first section describes the CCES 2020 dataset, highlighting key attributes and presenting graphs of demographic distributions. The second section details the logistic regression model, its rationale, and preliminary findings. The third section analyzes how living environment, employment status, and income influenced election outcomes using visualizations and numerical results. The fourth section discusses the implications of the findings, potential weaknesses, and future research directions.
+
+The appendix provides an in-depth exploration of survey methodologies, focusing on sampling and observational data related to the CCES 2020 dataset. It includes detailed discussions of idealized methodologies, literature comparisons, and simulations to illustrate sampling variability and bias, expanding on points in the Data section.
+
+This analysis was conducted in R, utilizing several packages to streamline data handling, visualization, and modeling. Key tools include tidyverse for data manipulation and visualization, dataverse for accessing the CCES dataset, knitr for generating the report, modelsummary for interpreting models, and rstanarm for Bayesian regression analysis [@citeR; @Dataverse; @Knitr; @Modelsummary; @Rstanarm; @Tidybayes; @Dplyr]. Additionally, ggplot visualizations and elements of the "Discussion" section were developed with the assistance of ChatGPT4 @chatgpt.
 \newpage
 
 
 # Data
-The dataset I used was the 2020 Cooperative Election Study (CCES) [@ces2020]. This data is provided by the Harvard dataverse and is conducted yearly as a survey of US political opinions, with the 2020 iteration including 61,000 respondents @ces2020. The release also includes a full guide to the data, and the questionnaires used. Vote validation was conducted by Catalist, a largescale organization with information on over 240 million individuals in the United States [@Catalist2017]. 
+The dataset for this analysis is the 2020 Cooperative Election Study (CCES) [@ces2020], accessed via the Harvard Dataverse. The 2020 iteration surveyed 61,000 respondents, capturing a broad spectrum of U.S. political opinions. The release includes detailed documentation and questionnaires, ensuring transparency and replicability. Vote validation was conducted by Catalist, a large-scale organization maintaining data on over 240 million U.S. individuals [@Catalist2017].
 
 ## Strengths
 
@@ -73,13 +87,13 @@ Sources for @fig-respondents below: [@ANES2020],[@Pew2020],[@Gallup2020], [@ces2
 
 # Create a data frame with the number of respondents for each source
 survey_data <- data.frame(
-  Source = c("ANES 2020", "Pew Research", "Gallup Polls", "CCES 2020"),
-  Respondents = c(8280, 11818, 1000, 61000)
+  Source = c("ANES 2020", "Pew Research", "Edison Exit Polls", "CCES 2020"),
+  Respondents = c(8280, 11818, 25000, 61000) # Updated with additional sources
 )
 
-# Generate the point graph
-ggplot(survey_data, aes(x = Source, y = Respondents)) +
-  geom_point(size = 5, color = "blue") +
+# Generate the bar graph
+ggplot(survey_data, aes(x = Source, y = Respondents, fill = Source)) +
+  geom_bar(stat = "identity") +
   theme_minimal() +
   labs(
     title = "Number of Respondents per Survey Source",
@@ -91,179 +105,246 @@ ggplot(survey_data, aes(x = Source, y = Respondents)) +
 ```
 
 
-From @fig-respondents, we can see that the CCES poll has the largest respondent pool compared to similar surveys. This ensures that analyses can be sufficiently granular, allowing us to analyze smaller subgroups that a smaller dataset may not represent accurately [@Ansolabehere2020].
+@fig-respondents shows that CCES poll features the largest respondent pool compared to other surveys. This extensive sample size enables granular analyses, ensuring the representation of smaller subgroups that may be underrepresented in smaller datasets [@Ansolabehere2020].
 
 ### Data Collection Phases
 The CCES collected data in two waves, immediately before and after the 2020 election. This helps capture the shifts in voter attitudes and preferences during the critical final stages of the election campaign [@ces2020]. Pew Research and Gallup each conduct multiple polls of much smaller scale leading up to the election, which will give a snapshot in time of the voter sentiment but does not capture as broad of a perspective as the CES survey [@Pew2020], [@Gallup2020].
 
 ### Sampling Methodology
-The sampling methodology and vote validation protocols are well outlined in the guide. This dataset employs sample matching, a two-step process designed to create a survey sample that represents a larger population as closely as possible. First, a sample that reflects the broader population (called the target sample) is selected based on certain characteristics like age, race, and gender. Then, for each person in this target sample, someone with the closest matching profile from a pool of survey volunteers is chosen. The match is based on many characteristics available in databases, ensuring the survey sample mirrors the target population.
+The CCES employs a two-step sample matching methodology designed to create a representative survey sample:
 
-After the matched sample is created, it's given weights to adjust for any minor differences between it and the target population, ensuring the final results are representative. The weights are calculated in two stages using data from the American Community Survey and validated voter registration records, accounting for factors such as demographics and voter behaviors.
+#### Target Sample Creation
+A target sample is generated to reflect the broader population based on key demographic variables such as age, gender, race, and educational attainment. This target sample serves as a benchmark for representativeness.
 
-The CES then uses state-level samples and compares them with actual election results to validate the sample's accuracy and the weighting process. If survey estimates closely align with the actual votes, it suggests that the CES sample is accurate and representative [@ces2020].
+#### Matched Sample Selection
+For each individual in the target sample, a closely matched respondent is selected from a pool of survey volunteers maintained by YouGov. Matches are determined using a combination of publicly available databases and YouGov’s proprietary data, ensuring close alignment on variables such as geography, party registration, and voter history.
 
-This methodology is well fitted for the online opt-in nature of the survey, and helps combat the issues that arise with random or quota sampling which lead to results that are uncharacteristic of the target sample [@sample2007].
+Once the matched sample is established, it is weighted to adjust for discrepancies between the sample and the target population. The weighting process involves two stages:
+
+#### Demographic Weighting
+Adjustments are made using data from the American Community Survey to ensure accurate representation across demographics.
+
+#### Voting Behavior Weighting
+Further adjustments incorporate validated voter registration data, accounting for turnout and voting patterns at the state and national levels.
+
+Validation of the sampling methodology is conducted by comparing state-level survey results with official election outcomes. This comparison ensures that survey estimates align with actual voter behavior, providing confidence in the dataset's representativeness.
+
+The sampling approach is specifically designed for online opt-in panels and mitigates biases commonly associated with such surveys, such as overrepresentation of politically engaged respondents. Unlike traditional random or quota sampling, this methodology emphasizes precision in matching and post-stratification to minimize systematic error [@ces2020], [@sample2007].
 
 ## Limitations
-While the data is largely reliable, there exist some smaller errors and limitations. The guide details an error affecting 925 respondents from North Carolina, who were shown candidate names for incorrect districts. This could influence the accuracy of analyses related to House races, necessitating verification methods and adjustments in studies which focus on these aspects. 
+The data has some limitations. An error affected 925 North Carolina respondents who were shown incorrect House race candidates, impacting analyses of these districts. Additionally, self-reported data can introduce biases such as recall or social desirability bias. Pre-election surveys may also fail to capture last-minute shifts in voter sentiment.
 
-As with any survey-based research, the CCES 2020 relies on self-reported data, which can introduce biases such as social desirability bias or recall bias. Additionally, pre-election surveys may not capture last-minute shifts in voter sentiment, which is particularly relevant in a rapidly evolving and polarized political climate like that of 2020.
-
-The survey was conducted using an online survey platform hosted by YouGov [@ces2020]. Online surveys overcome geographical and physical barriers that traditional survey methods might face, allowing for more diverse participant engagement. However, certain demographic groups might be underrepresented in online panels due to varying levels of internet access and technological literacy, potentially introducing biases into the dataset. Additionally, the impersonal nature of online surveys could affect the quality of responses, since the lack of a direct interviewer may lead to less thoughtful answers from participants.
+The online nature of the survey, hosted by YouGov, expands accessibility but may underrepresent groups with limited internet access or technological literacy. Furthermore, the lack of an interviewer in online surveys could impact response quality [@ces2020].
 
 ## Variables of Interest
-The selection of age, gender, and education as predictor variables for analyzing political preference in the 2020 CCES data is informed by specific findings from prior research that shows their impact on voting behavior.
+The selection of living environment, employment status, and income level as predictor variables for analyzing political preferences in the 2020 CCES data is guided by prior research that underscores their influence on voting behavior.
 
-### Age
-The impact of age on political preferences is significant, as demonstrated in the 2016 election context. An article by Pew Research (2018) shows that 58% of validated voters aged 18-29 voted for the Democratic Party (Hillary Clinton), compared to 28% voting Republican (Trump). These numbers slowly begin to favor Trump with older age groups, where 53% of validated voters aged 65+ voted for Trump and only 44% voted for Hillary Clinton [@2016votes]. Research by Iyengar and Krupenkin (2018) illustrates that younger voters, influenced by contemporary sociopolitical developments, exhibit a marked preference for progressive policies and candidates [@IyengarKrupenkin2018]. This tendency is often contrasted with older voters who may prioritize different issues based on their lived experiences. 
+### Urban vs. Rural Residency
+Urban and rural divides are well-documented predictors of political preferences. Urban voters have consistently leaned Democratic, driven by higher population density and exposure to diverse cultural and socioeconomic dynamics. For example, Pew Research found that 62% of urban voters supported Hillary Clinton in the 2016 election, compared to only 35% in rural areas [@Pew2018]. Rural voters, in contrast, exhibit stronger support for Republican candidates, influenced by traditional values and economic concerns rooted in agriculture and resource-based industries [@Cramer2016].
 
-### Gender
-The gender gap in political preferences is a well-documented phenomenon, with women more likely to support democratic candidates and policies, in particular social welfare and healthcare [@BoxSteffensmeier2004; @Dolan2014]. Pew Research found 11% more men voted for Trump compared to Clinton, while 16% more women chose the Democratic candidate Clinton [@2016votes].
+Research also shows that suburban areas, often politically contested, have shifted in recent years. The Cook Political Report highlights a notable swing in suburban support toward Democratic candidates in 2020, attributed to changes in demographics and education levels among suburban voters [@Cook2020].
 
-### Education
-Level of education is a strong predictor of political knowledge and ideological orientation. Individuals with higher education levels are generally more politically engaged, exhibit greater political efficacy, and tend to support liberal ideologies [@Highton2009]. We saw this play out in the 2016 election as generally college-grads were more favoured toward the Democratic Party, while remarkably more (64% vs. 28%) non-grads favoured Trump [@2016votes]. 
+### Income Level
+Income levels are closely tied to political preferences, with higher-income individuals generally favoring Republican candidates due to tax policies, while lower-income groups often lean Democratic, prioritizing social welfare and redistribution policies [@Frank2004]. For example, the Census Bureau's Current Population Survey shows that in 2020, households earning under $50,000 were more likely to support Joe Biden, while those earning over $100,000 favored Donald Trump [@CPS2020].
+
+However, this trend is nuanced by education levels and geographic factors. High-income earners in urban areas often prioritize social liberalism and climate change policies, aligning with Democratic platforms, while rural high-income earners focus more on fiscal conservatism [@Pew2020; @Edsall2020].
+
+### Employment Level
+Employment status significantly impacts voter preferences, with distinct patterns emerging across different occupational categories. Full-time workers are often divided along industry lines, with white-collar employees tending to support Democratic candidates and blue-collar workers aligning more with Republican candidates [@Muro2020]. Unemployment during economic crises, such as the COVID-19 pandemic, has further shaped voting patterns. Studies show that unemployed individuals are more likely to support candidates promising expansive social safety nets and job creation [@Blustein2020; @Fowler2020].
+
+Retirees also exhibit unique voting behaviors, often prioritizing stability and healthcare, leading to a higher likelihood of Republican support [@KFF2020]. In contrast, students, who are less economically established and more progressive, tend to favor Democratic candidates [@Frey2020].
 
 ## Data Preparation and Cleaning
-The 2020 CCES data was first obtained via the dataverse package directly from Harvard Dataverse, and then saved in parquet format using the arrow package for efficient storage and access [@arrow]. The cleaning process involved filtering for registered voters who chose either Biden or Trump, in order to treat presidential votes as a binary outcome. 
+The 2020 CCES data, as recorded by Schaffner, Brian et al., was obtained from the Harvard Dataverse and processed using the arrow package for efficient storage in parquet format [@arrow]. The raw data was imported from a CSV file, and the cleaning process involved filtering for registered voters who cast votes for either Joe Biden or Donald Trump, treating the presidential vote as a binary outcome.
 
-The respondent variables (age, gender, and education) were transformed for clarity. Age was categorized into groups ("65+", "45-64", "30-44", "18-29"), gender was labeled ("Male", "Female"), and education levels were delineated ("No HS", "High school graduate", "Some college", "2-year", "4-year", "Post-grad"). These steps utilized the dplyr package for data manipulation.
+Key variables were transformed for clarity and analysis:
 
-The cleaned dataset was then saved in both CSV and parquet formats.
+Living Environment: Categorized into "City," "Suburb," "Town," and "Rural area" based on the urbancity variable.
+Employment Status: Labeled as "Full-time," "Part-time," "Temporarily laid off," "Unemployed," "Retired," "Permanently disabled," "Homemaker," or "Student."
+Income Levels: Grouped into ranges: "< 10k," "10-50k," "50-100k," "100-200k," "200-500k," and "> 500k."
+These transformations were implemented using the dplyr package for data manipulation. Each variable was converted into a factor with ordered levels to facilitate analysis and visualization.
 
-The distributions for each explanatory variable are illustrated in @fig-education and @fig-agegender below:
+The cleaned dataset was saved in both CSV and parquet formats for ease of use in subsequent analyses. Distributions for key explanatory variables, such as living environment, employment status, and income, are visualized in @fig-living, @fig-employment, and @fig-income below.
 
 ```{r out.height="20%"}
-#| label: fig-education
-#| fig-cap: "Number of respondents for various 2020 election survey sources"
+#| label: fig-living
+#| fig-cap: "Number of respondents by area of living"
 #| echo: false
 #| warning: false
 #| message: false
 
-ggplot(ces_data, aes(x = education, fill = education)) +
-  coord_flip()+
-  geom_bar() +
-  scale_fill_brewer(palette = "Paired") + # More colors for distinction
+# Plot for area of living, excluding NA values
+ggplot(cleaned_data %>% filter(!is.na(living)), aes(x = living)) +
+  geom_bar(fill = "#87CEEB") +
   theme_minimal() +
-  labs(title = "Respondents per Level of Education",
-       y = "Education Level",
-       x = "Count") +
-  theme(legend.title = element_blank()) 
+  labs(title = "Respondents per Area of Living",
+       x = "Living Environment",
+       y = "Count") +
+  theme(legend.title = element_blank(),
+        plot.title = element_text(size = 14))
 
 ```
-
 ```{r out.height="20%"}
-#| label: fig-agegender
-#| fig-cap: "Number of respondents for age group and gender"
+#| label: fig-employment
+#| fig-cap: "Number of respondents by employment status"
 #| echo: false
 #| warning: false
 #| message: false
-# visualizing the age group distribution
-plot_age <- ggplot(ces_data, aes(x = age)) +
-  geom_bar(fill = "#FFA07A") +
-  theme_minimal() +
-  labs(title = "Respondents per Age Group", x = "Age Group", y = "Count") +
-  theme(legend.title = element_blank()) 
 
-# visualizing the gender distribution
-plot_gender <- ggplot(ces_data, aes(x = gender)) +
-  geom_bar(fill = "#778899") +
+# Plot for employment status
+ggplot(cleaned_data %>% filter(!is.na(employment)), aes(x = employment)) +
+  coord_flip() +
+  geom_bar(fill = "#87CEFA") +
   theme_minimal() +
-  labs(title = "Respondents per Gender", x = "Gender", y = "Count")+
-  theme(legend.title = element_blank()) 
+  labs(title = "Respondents per Employment Status",
+       x = "Employment Status",
+       y = "Count") +
+  theme(legend.title = element_blank(),
+        plot.title = element_text(size = 14))
 
-plot_age + plot_gender + plot_layout(ncol = 2)
 ```
-
-@fig-education tells us that 4-year degree graduates are the most well represented in the polls, followed by high school graduates, people with some college, and then 2-year degree graduates. People who have not graduated high school are hardly represented at all.
-
-In @fig-agegender we see 45-64 being the most dominant age group, with much less representation in the 18-29 range. Also, about 20% more females participated in the study than males. 
-
-Below are some figures representing who people voted for based on their age and gender, followed by education level and gender.
-
 ```{r out.height="20%"}
-#| label: fig-agevotes
-#| fig-cap: "Proportion of votes at each age group"
+#| label: fig-income
+#| fig-cap: "Number of respondents by family income level"
 #| echo: false
 #| warning: false
 #| message: false
 
-# Relationship between Age and Political Preferences
-ggplot(ces_data, aes(x = age, fill = voted_for)) +
-  geom_bar(position = "fill") +
-  scale_fill_brewer(palette = "Set1") +
+# Plot for income level, excluding NA values
+ggplot(cleaned_data %>% filter(!is.na(income)), aes(x = income)) +
+  geom_bar(fill = "#FFD700") +
   theme_minimal() +
-  labs(title = "Age and Political Preferences", x = "Age Group", y = "Proportion")
+  labs(title = "Respondents per Income Level",
+       x = "Income Level",
+       y = "Count") +
+  theme(legend.title = element_blank(),
+        plot.title = element_text(size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels for clarity
 ```
-@fig-agevotes shows a negative correlation between votes for Joe Biden and older age groups.
+@fig-living shows that the most common respondents were living in the suburbs and the city. 
+
+In @fig-employment, the most common employment levels were full-time employees or retired.
+
+@fig-income shows that the most common income levels were between the 10-100k range, and there was a high number of participants with an income level above $500,000.
+
 ```{r out.height="20%"}
-#| label: fig-gendervotes
-#| fig-cap: "Proportion of votes by gender"
+#| label: fig-employmentvotes
+#| fig-cap: "Proportion of votes by employment status"
 #| echo: false
 #| warning: false
 #| message: false
-ggplot(ces_data, aes(x = gender, fill = voted_for)) +
-  geom_bar(position = "fill") +
-  scale_fill_brewer(palette = "Set1") +
-  theme_minimal() +
-  labs(title = "Gender and Political Preferences", x = "Age Group", y = "Proportion")
-```
-We can see that in @fig-gendervotes, more women voted for Joe Biden than men. 
 
-```{r out.height="20%"}
-#| label: fig-educationvotes
-#| fig-cap: "Proportion of votes at each level of education"
-#| echo: false
-#| warning: false
-#| message: false
-# Relationship between Education and Political Preferences
-
-ggplot(ces_data, aes(x = education, fill = voted_for)) +
-  coord_flip()+
+# Plot for proportion of votes by employment status, excluding NA values
+ggplot(cleaned_data %>% filter(!is.na(employment)), aes(x = employment, fill = voted_for)) +
+  coord_flip() +
   geom_bar(position = "fill") +
   scale_fill_brewer(palette = "Set2") +
   theme_minimal() +
-  labs(title = "Education and Political Preferences", x = "Education Level", y = "Proportion")
+  labs(title = "Proportion of Votes by Employment Status", 
+       x = "Employment Status", 
+       y = "Proportion")
 ```
 
-@fig-educationvotes is more interesting in the sense that the number of voters for Biden generally trends positively with higher levels of education, but the "No HS" and "Some College" groups had more votes for Biden respectively than the next level of education. It may be worth to note that "Some college" does not specify how much time they spent in college.
+@fig-employmentvotes shows clear trends in voting preferences. Students and those with lower income levels leaned more towards Joe Biden, likely reflecting generational and policy concerns such as healthcare and education funding. Conversely, individuals in full-time or part-time employment were more evenly split, with blue-collar occupations often skewing towards Donald Trump due to economic policies favoring traditional industries.
+```{r out.height="30%"}
+#| label: fig-scatter-income-employment
+#| fig-cap: "Income vs. Employment Status"
+#| echo: false
+#| warning: false
+#| message: false
+
+ggplot(cleaned_data, aes(x = employment, y = as.numeric(income), color = voted_for)) +
+  geom_jitter(width = 0.2, height = 0) +
+  scale_color_brewer(palette = "Set2") +
+  theme_minimal() +
+  labs(title = "Income vs. Employment Status",
+       x = "Employment Status",
+       y = "Income Level",
+       color = "Voted For")
+
+```
+
+@fig-scatter-income-employment shows us the income distribution across employment types.
+
+Full-time workers exhibit the widest income distribution, spanning from "<10k" to ">500k."
+Retirees and students predominantly occupy lower income levels, aligning with expectations based on fixed or limited income sources.
+
+Retirees and students show a strong preference for Biden, while higher-income full-time workers lean slightly toward Trump.
+Homemakers and permanently disabled individuals display narrower income ranges but include both Biden and Trump voters.
+
+In the ">500k" category, Trump garners more support, consistent with Republican tax policies favoring high-income earners.
+These patterns underscore the nuanced relationships between employment, income, and political preferences, highlighting the diversity of economic profiles within voter bases.
+
+```{r out.height="30%"}
+#| label: fig-heatmap-employment-living
+#| fig-cap: "Heatmap of employment status and living environment"
+#| echo: false
+#| warning: false
+#| message: false
+
+# Pre-compute counts for the heatmap
+heatmap_data <- cleaned_data %>%
+  count(living, employment)
+
+# Create the heatmap
+ggplot(heatmap_data, aes(x = living, y = employment, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  labs(title = "Employment Status by Living Environment",
+       x = "Living Environment",
+       y = "Employment Status",
+       fill = "Count")
+```
+
+The @fig-heatmap-employment-living provides insights into the distribution of employment statuses across different living environments:
+
+Suburbs have the highest concentration of full-time workers, as indicated by the deep blue color. This aligns with the demographic trends of suburban areas, which often attract working professionals due to proximity to urban centers and family-friendly amenities.
+
+Retirees are present in all living environments, with notable concentrations in both suburbs and rural areas. This reflects retirement trends where individuals seek quieter or more affordable living conditions outside cities.
+
+Rural areas show a higher proportion of homemakers compared to other environments, consistent with traditional family roles in less urbanized areas.
+
+Cities have the largest concentration of students, likely due to the presence of educational institutions and urban amenities.
+
+Rural areas show higher proportions of unemployed and permanently disabled individuals compared to cities and suburbs, highlighting economic disparities and limited job opportunities in these regions.
+
+Part-time work and temporary layoffs are distributed fairly evenly across living environments, suggesting they are less influenced by geographic location.
 
 # Model
 
-Logistic regression is a model used when the outcome or dependent variable is binary, which fits this scenario perfectly as we are modelling votes for Joe Biden vs. Donald Trump.
+Logistic regression is a statistical model designed for binary outcomes, making it ideal for this study as we model votes for Joe Biden (1) versus Donald Trump (0).
 
-The regression model will calculate the log odds of the probability that a respondent votes for Joe Biden, and then map it to a probability between 0 and 1 through the logistic function.
-
-The standard logistic function $\sigma(t)$ for a real-valued input $t$ is defined as:
+The model calculates the log odds of a respondent voting for Joe Biden and maps it to a probability between 0 and 1 using the logistic function. This function, $\sigma(t)$, is defined as:
 
 ```{=tex}
 \[ \sigma(t) = \frac{1}{1 + e^{-t}} \]
 ```
 
-The graph of the logistic function is an S-shaped curve known as a sigmoid curve. It approaches 1 as $t$ goes to positive infinity and approaches 0 as $t$ goes to negative infinity.
+The logistic function produces an S-shaped sigmoid curve, which asymptotically approaches 1 as $t$ increases and 0 as $t$ decreases. In logistic regression, the input $t$ is modeled as a linear combination of predictors (including an intercept), expressed as $\beta_0 + \beta_1X_1 + \beta_2X_2 + \dots + \beta_nX_n$. This transforms the predictors into probabilities of the binary outcome.
 
-In logistic regression, the input $t$ is the linear combination of predictors including the intercept, which can be represented as $\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$. The logistic function then translates this into a probability that the dependent variable is 1 (voted for Joe Biden).
+For this analysis, the predictors are employment status, income level, and living environment. These variables are passed through the logistic function to estimate $P(Y_i=1)$, the probability that respondent $i$ votes for Joe Biden.
 
-In this situation, I will be using the predictors age, education, and gender and then applying the logistic function to get the probability $P(Y_i=1)$ that a respondent $i$ supports Joe Biden.
-
-This model is particularly strong at handling categorical dependent variables, which each of my explanatory variables fall under [@Hosmer2013].
+Logistic regression is well-suited for categorical and binary-dependent variables, and the explanatory variables in this study are categorical, making it an appropriate choice [@Hosmer2013].
 
 ## Model Specification
 
-The logistic regression model is defined as:
+The logistic regression model is specified as follows:
 
 ```{=tex}
 \[
-\log\left(\frac{P(Y_i=1)}{1 - P(Y_i=1)}\right) = \beta_0 + \beta_1X_{\text{age},i} + \beta_2X_{\text{education},i} + \beta_3X_{\text{gender},i}
+\log\left(\frac{P(Y_i=1)}{1 - P(Y_i=1)}\right) = \beta_0 + \beta_1X_{\text{employment},i} + \beta_2X_{\text{income},i} + \beta_3X_{\text{living},i}
 \]
 ```
-## Model set-up
-
-- $Y_i$ is the binary indicator of support for the Democratic candidate Joe Biden (1) versus the Republican candidate Donald Trump (0) for respondent $i$.
-- $X_{\text{age},i}$, $X_{\text{education},i}$, and $X_{\text{gender},i}$ are the age, education level, and gender of respondent $i$, respectively.
-- $\beta_0$ represents the model intercept, while $\beta_1$, $\beta_2$, and $\beta_3$ are coefficients quantifying the effects of age, education, and gender on the likelihood of Democratic support. 
-
-I fit my logistic regression model to the data using 'stan_glm()' function from the 'rstanarm' package in R [@citeR, @Rstanarm]. This function will automatically determine each of the $\beta$ coefficients in the model, using a smaller slice sample of 3000 from the 2020 CCES data we processed. This function also uses Bayesian logistic regression with the default priors from 'rstanarm'.
+## Model Setup
+$Y_i$: Binary indicator of support for Joe Biden (1) or Donald Trump (0) for respondent $i$.
+$X_{\text{employment},i}$: Employment status of respondent $i$.
+$X_{\text{income},i}$: Income level of respondent $i$.
+$X_{\text{living},i}$: Living environment of respondent $i$.
+$\beta_0$: Intercept of the model.
+$\beta_1$, $\beta_2$, $\beta_3$: Coefficients quantifying the impact of employment, income, and living environment, respectively, on the likelihood of supporting Joe Biden.
+Model Fitting
+The model was implemented using the stan_glm() function from the rstanarm package in R [@citeR, @Rstanarm]. This function applies Bayesian logistic regression with default priors and estimates the $\beta$ coefficients for the predictors. The model was fit to a subset of 3000 respondents from the 2020 CCES data processed earlier.
 
 
 ### Model Justification
