@@ -39,25 +39,22 @@ cleaned_data <- read_csv("../data/02-analysis_data/analysis_data.csv")
 ```
 
 # Introduction
-The 2020 United States presidential election highlighted key societal shifts amidst crises. Beyond the COVID-19 pandemic, which reshaped healthcare and exposed systemic vulnerabilities, the election underscored debates about economic inequality as unemployment surged [@Blustein2020; @BLS2020]. Climate change became a priority for many voters, driven by the growing frequency of natural disasters [@IPCC2020].
+The 2020 United States presidential election highlighted societal shifts during crises. The COVID-19 pandemic reshaped healthcare and exposed systemic vulnerabilities, while economic inequality became central as unemployment surged [@Blustein2020; @BLS2020]. Climate change also emerged as a priority, driven by natural disasters [@IPCC2020].
 
-Demographic patterns also shaped the election. Younger, more diverse voters emphasized generational and racial divides in priorities [@Frey2020]. Suburban voting patterns, particularly among college-educated women, had shifts in key swing areas [@Cook2020]. The widespread adoption of mail-in voting during the pandemic increased accessibility but fueled political and legal debates over election integrity [@NCSL2020]. The election also tested democratic institutions against misinformation and polarization [@BenGurion2020; @Sunstein2020].
+Demographic patterns influenced the election. Younger, diverse voters emphasized generational and racial divides in priorities [@Frey2020]. Suburban voting patterns among college-educated women revealed shifts in key areas [@Cook2020]. Mail-in voting increased accessibility during the pandemic but fueled debates over election integrity [@NCSL2020]. The election tested democratic institutions against misinformation and polarization [@BenGurion2020; @Sunstein2020].
 
-Living environments strongly influenced political alignment. Urban residents predominantly supported Joe Biden, reflecting progressive policy preferences often found in cities [@bishop2019bigsort]. Conversely, rural voters favored Donald Trump, consistent with support for conservative values [@cramer2016politics].
+Living environments strongly shaped political alignment. Urban residents predominantly supported Joe Biden, reflecting progressive policy preferences [@bishop2019bigsort]. Rural voters favored Donald Trump, consistent with conservative values [@cramer2016politics]. Employment status and income further defined political divides. Students and retirees leaned toward Biden, driven by concerns about healthcare and education [@cces2020]. Higher-income voters leaned Republican, especially in rural and suburban areas [@pew2020voteranalysis].
 
-Employment status was another factor. Data from the Cooperative Congressional Election Study (CCES, 2020) indicated that students and retirees leaned toward Biden, likely due to policy interests in education and healthcare. Full-time workers exhibited mixed preferences influenced by industry and region [@cces2020].
+This study estimates the probability of voting for Joe Biden versus Donald Trump, conditional on living environment, employment status, and income levels. Logistic regression, suited for binary outcomes, is used to model these relationships. The analysis relies on the 2020 Cooperative Congressional Election Study (CCES), a stratified survey conducted by YouGov and sourced from the Harvard Dataverse [@cces2020]. Supporting data from Pew Research and the Census Bureau’s Current Population Survey validate findings [@pew2020; @CPS2020].
 
-Income disparities also defined political divides. Lower-income groups largely supported Biden, aligning with Democratic policies on healthcare and social safety nets, while higher-income voters leaned Republican, especially in rural and suburban settings, reflecting preferences for tax policies benefiting their financial interests [@pew2020voteranalysis].
+The estimand is the effect of income level, employment status, and living area on the odds of voting for Biden, measured as the change in predicted odds associated with each predictor, holding other factors constant.
 
-This study uses a logistic regression model to predict voting preferences based on living environment, employment status, and income levels. Logistic regression is suited for binary outcomes, providing probabilities for voter alignment with each candidate. 
+The report includes five sections and an appendix. After the introduction, the first section describes the CCES dataset, highlighting demographic distributions. The second section explains the logistic regression model and presents findings. The third section analyzes the effects of living environment, employment, and income on voting using visualizations and numerical results. The fourth section discusses implications, limitations, and directions for future research.
 
-The primary dataset is the 2020 Cooperative Congressional Election Study (CCES), a stratified survey conducted by YouGov and sourced from the Harvard Dataverse [@cces2020]. Supporting data includes Pew Research Center’s 2020 voter analysis and the Census Bureau’s Current Population Survey Voting and Registration Supplement, which validate and contextualize findings [@pew2020; @CPS2020].
+The appendix explores survey methodologies, focusing on sampling and observational data in the CCES dataset. It compares methodologies, examines sampling variability and bias, and uses simulations to expand on points in the data section.
 
-The report includes five sections and an appendix. After the introduction, the first section describes the CCES dataset, highlighting demographic attributes and distributions. The second section explains the logistic regression model and presents preliminary findings. The third section analyzes the influence of living environment, employment status, and income on election outcomes using visualizations and numerical results. The fourth section discusses the implications, limitations, and directions for future research.
+This analysis was conducted in R, using tidyverse for data manipulation, dataverse for dataset access, knitr for report generation, modelsummary for model interpretation, and rstanarm for Bayesian regression [@citeR; @Dataverse; @Knitr; @Modelsummary; @Rstanarm; @Tidybayes; @Dplyr]. Visualizations were created with ggplot, and portions of the discussion and appendix were assisted by ChatGPT4 [@chatgpt].
 
-The appendix explores survey methodologies, focusing on sampling and observational data in the CCES dataset. It compares methodologies, discusses sampling variability and bias, and uses simulations to expand on points in the Data section.
-
-This analysis was done in R, with the packages tidyverse for data manipulation, dataverse for dataset access, knitr for report generation, modelsummary for model interpretation, and rstanarm for Bayesian regression [@citeR; @Dataverse; @Knitr; @Modelsummary; @Rstanarm; @Tidybayes; @Dplyr]. Plots and graphs were created with ggplot, and portions of the discussion, data, and appendix were assisted by ChatGPT4 [@chatgpt].
 \newpage
 
 
@@ -796,104 +793,98 @@ ggplot(data.frame(residuals), aes(x = residuals)) +
 
 # Discussion
 
-This paper investigated the influence of socio-economic factors—employment status, income level, and living environment—on voting preferences during the 2020 U.S. Presidential Election. Utilizing the 2020 Cooperative Election Study (CCES) dataset, a logistic regression model was applied to predict support for Joe Biden versus Donald Trump. The model incorporated categorical predictors, regularized with Bayesian priors, to account for variability while ensuring interpretability. The model's predictors were carefully chosen to reflect significant socio-economic dimensions that shape voter behavior. Through statistical analysis, this study identified meaningful correlations between these predictors and political alignment, shedding light on broader socio-political dynamics in the United States.
+This paper examines how socio-economic factors—employment status, income level, and living environment—shape voting preferences in the 2020 U.S. Presidential Election. Using the 2020 Cooperative Election Study (CCES) dataset, a logistic regression model was applied to predict support for Joe Biden versus Donald Trump. The model incorporated categorical predictors to reflect socio-economic dimensions influencing voter behavior. Analysis identified relationships between these predictors and political alignment, highlighting socio-political dynamics in the United States.
 
-By employing a logistic regression model, this paper directly modeled the binary nature of the voting outcome while retaining a clear interpretation of how each predictor contributed to the likelihood of voting for a particular candidate. The inclusion of categorical variables like employment, income, and living environment provided an avenue to explore how socio-economic realities translate into political preferences.
+The logistic regression model directly addressed the binary nature of the voting outcome, providing interpretable results on how each predictor influenced voting likelihood. Including categorical variables such as employment, income, and living environment allowed analysis of how socio-economic realities influence political preferences.
 
-## Takeaways 
+### Takeaways
 
-This analysis shows the continued significance of the urban-rural divide in American politics. Urban voters were far more likely to support Joe Biden, a trend consistent with existing literature on urban liberalism and rural conservatism [@Pew2020u]. Urban areas, characterized by higher population densities and greater economic and cultural diversity, often prioritize progressive policies such as environmental regulation, healthcare access, and social equity. Conversely, rural voters exhibited a marked preference for Donald Trump, reflecting a broader alignment with conservative policies, including lower taxation, gun rights, and traditional social values [@IyengarKrupenkin2018]. These findings underscore the stark political polarization between urban and rural constituencies, a division that has deepened over successive election cycles.
+The urban-rural divide continues to shape American politics. Urban voters predominantly supported Joe Biden, aligning with policies related to healthcare, environmental regulation, and equity [@Pew2020u]. Rural voters favored Donald Trump, supporting policies related to lower taxes, gun rights, and traditional values [@IyengarKrupenkin2018]. This polarization reflects growing differences between urban and rural constituencies.
 
-Another takeaway is the role of income in shaping political preferences. Lower-income groups were more likely to support Biden, aligning with the Democratic platform's emphasis on social welfare programs, affordable healthcare, and economic redistribution. Middle-income groups displayed more mixed preferences, often reflecting a balance between economic self-interest and policy priorities. Interestingly, the wealthiest demographic groups exhibited reduced support for Biden, suggesting that concerns over Democratic tax policies and fiscal regulations may outweigh social considerations in shaping their voting behavior [@Frank2004; @Gelman2009]. This U-shaped relationship between income and voting patterns highlights the complexity of economic factors in political decision-making.
+Income also influenced voting behavior. Lower-income groups supported Biden, consistent with policies prioritizing social welfare and economic redistribution. Middle-income groups showed mixed preferences, balancing economic priorities with policy concerns. Higher-income voters leaned Republican, likely due to concerns over Democratic tax policies [@Frank2004; @Gelman2009]. These trends reflect a U-shaped relationship between income and political preferences.
 
-Employment status further illuminated key dynamics in voter behavior. Students and retired individuals showed strong support for Biden, possibly due to generational policy preferences such as student debt relief and Social Security protection. Full-time workers demonstrated more balanced voting preferences, reflecting the diversity of this group in terms of socio-economic priorities. Notably, individuals in precarious employment situations, such as part-time or temporarily laid-off workers, leaned toward Biden, likely reflecting concerns over job security and healthcare access in the wake of the COVID-19 pandemic.
+Employment status further influenced voter behavior. Students and retirees supported Biden, reflecting priorities such as debt relief and Social Security. Full-time workers demonstrated varied preferences due to diverse priorities. Part-time and temporarily laid-off workers leaned toward Biden, likely reflecting concerns about job security and healthcare during the COVID-19 pandemic.
 
-## Weaknesses 
+### Weaknesses
 
-While the model was well-suited for the purpose of predicting binary outcomes, there were several limitations. First, the logistic regression model assumes linearity in the log-odds of the predictors, which may oversimplify complex interactions between socio-economic factors and voting behavior. Non-linear relationships or interaction effects, such as how income and employment jointly influence voting preferences, may be overlooked in this framework.
+The model has several limitations. Logistic regression assumes linearity in log-odds, potentially oversimplifying relationships between predictors and voting behavior. Interaction effects, such as between income and employment, were not fully explored. 
 
-The categorical representation of predictors, while simplifying interpretation, also introduces granularity constraints. For example, income categories like "50-100k" cover a broad range of experiences that may differ substantially in their political implications. Similarly, the employment categories do not account for factors such as industry type or job satisfaction, which could have significant effects on political alignment.
+Categorical predictors simplify analysis but reduce specificity. For instance, income ranges like "50-100k" include diverse experiences that may influence voting behavior differently. Employment categories exclude factors such as industry type or job stability, which likely play significant roles in voter preferences.
 
-Another limitation lies in the reliance on self-reported survey data. Self-reporting is subject to biases such as social desirability and recall inaccuracies, potentially skewing results [@Ansolabehere2012]. Furthermore, the cross-sectional nature of the CCES dataset captures voter preferences at a single point in time, making it difficult to assess the impact of dynamic political events or campaign strategies on voting behavior [@Gelman2009].
+Reliance on self-reported survey data introduces biases like social desirability and recall errors [@Ansolabehere2012]. The cross-sectional nature of the CCES dataset limits the analysis to static preferences, ignoring changes over time and campaign effects [@Gelman2009]. Additionally, regional variations within urban and rural areas are not accounted for, which may obscure important differences.
 
-Finally, the model does not account for regional variations within urban and rural categories. For instance, urban areas in different states may have distinct political leanings influenced by local economic conditions, cultural dynamics, or historical contexts. Ignoring these regional differences may obscure important variations in the data.
+### Future Directions
 
-## Future Directions
+Future research could analyze how socio-economic factors interact with political events or social movements using longitudinal data, enabling causal analysis of voting behavior over time. Examining intersections of socio-economic factors with race, gender, or education could offer a richer understanding of voter preferences [@Highton2009].
 
-The findings of this paper open several avenues for future research. A key area for discussion is the role of timing in voting behavior. Incorporating longitudinal data could describe how socio-economic factors interact with political events, economic cycles, or social movements to shape voting preferences over time. Such an approach would allow researchers to examine causal relationships rather than mere associations.
+Non-linear models and machine learning methods could uncover relationships missed by logistic regression. Decision tree-based models or neural networks could identify patterns in voter behavior, though they may sacrifice interpretability.
 
-Intersectionality is another promising direction. Investigating how combinations of factors—such as race, gender, and education—jointly influence voting behavior could yield a richer understanding of political alignment. For example, how do the political preferences of low-income individuals differ by gender or race? Addressing these questions would require a more granular dataset and modeling techniques such as hierarchical or multi-level models [@Highton2009].
+Regional analyses are necessary to understand how local economic and cultural contexts influence voting preferences. Comparing manufacturing-heavy states with service-oriented urban centers could refine explanations of socio-economic effects on voting.
 
-Methodologically, future studies could benefit from experimenting with non-linear models or machine learning approaches. These methods can capture complex relationships and interactions that traditional logistic regression might miss. For instance, decision tree-based algorithms or neural networks could identify non-obvious patterns in how socio-economic factors influence voting preferences, though at the cost of reduced interpretability.
-
-Regional analyses are necessary to show how local contexts mediate the relationship between socio-economic factors and voting behavior. For example, employment trends in manufacturing-heavy states compared to service-oriented urban centers might cause differences in voter alignment. Incorporating regional economic data or policy differences could lead to mroe accurate explanations in future models.
-
-In conclusion, while this paper highlights the significant role of socio-economic factors in shaping political preferences, it also shows the need for more dynamic approaches to understanding voter behavior. By addressing these limitations and pursuing the outlined future directions, researchers can build a more comprehensive and context-sensitive picture of the socio-political landscape.
+This paper demonstrates the role of socio-economic factors in shaping political preferences. Addressing these limitations and pursuing these directions could deepen understanding of voter behavior and the socio-political landscape.
 
 
 # Appendix: Survey and Sampling Methodology
 
-Overview of Survey Design in the CCES 2020 Dataset
+### Overview of Survey Design in the CCES 2020 Dataset
 
-The 2020 Cooperative Election Study (CCES) is a large-scale, national survey designed to capture U.S. political behavior and attitudes. It employs a stratified sample, drawing from a diverse pool of respondents to achieve national representation The survey design is a collaborative effort between academic institutions and professional survey firms [@Ansolabehere2012].
+The 2020 Cooperative Election Study (CCES) is a large-scale survey capturing U.S. political behavior and attitudes. Administered by YouGov with academic oversight, it uses stratified sampling to ensure national representation [@Ansolabehere2012]. The survey includes a pre-election wave in October 2020 and a post-election wave in November 2020, allowing comparisons of voter attitudes and behaviors during the election period. Data collection occurs online, offering scalability and efficiency compared to traditional methods.
 
-The CCES includes two waves: a pre-election wave conducted in October 2020 and a post-election wave conducted in November 2020. This dual-wave structure allows researchers to capture shifts in voter sentiment and behavior during the election period. The survey uses online data collection, a method that benefits from scalability and cost-effectiveness.
+### Sampling Techniques
 
-## Sampling Techniques
+#### Stratified Sampling
 
-### Stratified Sampling
+Stratified sampling ensures proportional representation of subgroups based on demographic data from the U.S. Census Bureau and voter registration databases. This approach minimizes sampling variability and improves the precision of population estimates [@Lohr2021]. Subgroup analyses, such as examining rural voting patterns or income brackets, are possible due to this method.
 
-Stratified sampling ensures that subgroups of the population, such as those defined by age, race, income, or geographic region, are adequately represented. For the CCES, stratification is based on demographic characteristics derived from the U.S. Census Bureau and voter registration databases. This method minimizes sampling error and allows for more precise estimates of population parameters [@Lohr2021].
+#### Sample Matching
 
-### Sample Matching
+Sample matching enhances representativeness by selecting respondents from a pool based on predefined demographic benchmarks. The CCES matches respondents to a target sample derived from voter registration data, reducing biases associated with convenience sampling [@Rivers2006].
 
-Sample matching is a two-step process used to improve the representativeness of the survey sample. First, a target sample is generated based on demographic benchmarks. Next, survey respondents are selected from a larger pool to match the characteristics of the target sample. The CCES utilizes voter registration data to match respondents, enhancing the validity of findings [@Rivers2006].
+#### Weighting
 
-### Weighting
+Post-stratification weights correct deviations between the survey sample and the target population. Iterative proportional fitting adjusts for age, gender, race, and geographic imbalances [@Gelman2007]. Weighting ensures the dataset reflects national trends, accounting for differences in response rates among demographic groups.
 
-Post-stratification weights are applied to the data to correct for any deviations between the survey sample and the target population. These weights adjust for factors such as response bias and demographic discrepancies. The weights are calculated using iterative proportional fitting, ensuring alignment with key benchmarks like age, gender, race, and geographic distribution [@Gelman2007].
+### Observational Data and Challenges
 
-## Observational Data and Challenges
+#### Strengths of Observational Surveys
 
-### Strengths of Observational Surveys
+Observational surveys like the CCES provide data on real-world voter behavior across diverse populations. The CCES’s large sample size, exceeding 61,000 respondents, allows detailed analyses of interactions between income, employment, and geography.
 
-Observational surveys like the CCES provide a snapshot of real-world voter behavior, capturing smaller details that experimental designs may overlook. They allow for large-scale data collection across diverse populations, which is important for studying complex phenomena like political alignment.
+#### Limitations
 
-### Limitations
+1. **Nonresponse Bias**: Underrepresentation of certain groups, such as younger or less-educated individuals, skews results.
+2. **Self-Reporting Bias**: Respondents may misreport voting behavior or demographic details due to social desirability or recall errors [@Ansolabehere2012].
+3. **Cross-Sectional Nature**: The CCES captures data at specific points in time, limiting its ability to assess changes over time.
+4. **Internet Access Disparities**: Online surveys may exclude populations with limited internet access, such as older or rural voters.
 
-Despite their strengths, observational surveys face challenges such as:
+### Comparisons with Other Surveys
 
-1. Nonresponse Bias: Certain demographic groups may be less likely to participate, leading to underrepresentation.
+#### American National Election Studies (ANES)
 
-2. Self-Reporting Bias: Respondents may misreport their voting behavior or demographic characteristics, often due to social desirability [@Ansolabehere2012].
+The ANES combines face-to-face interviews with online surveys. Its smaller sample size limits subgroup analyses, but its detailed questions on political efficacy and ideology complement the CCES’s broader demographic focus [@Berinsky2014].
 
-3. Cross-Sectional Nature: The CCES captures data at specific points in time, limiting its ability to account for temporal changes in voter behavior.
+#### Pew Research Center Surveys
 
-## Comparisons with Other Surveys
+Pew Research surveys focus on shorter questionnaires tracking public opinion trends. While useful for snapshots, the CCES’s larger sample size and detailed questions better support modeling relationships between variables like income, employment, and location [@Pew2020].
 
-### American National Election Studies (ANES)
+### Methodological Best Practices
 
-The ANES employs a mixed-mode approach, combining face-to-face interviews with online surveys. While ANES provides rich contextual data, its smaller sample size limits the granularity of subgroup analysis compared to the CCES [@Berinsky2014].
+1. **Hybrid Sampling Methods**: Combining stratified sampling with other methods, such as online panel recruitment, improves representativeness.
+2. **Enhanced Weighting Techniques**: Machine learning in weighting processes can reduce biases among hard-to-reach groups.
+3. **Longitudinal Components**: Tracking individuals over time allows analysis of how voter behavior changes with events.
+4. **Integration of Administrative Data**: Linking survey responses to administrative records, such as tax data, improves accuracy and reliability.
 
-### Pew Research Center Surveys
+### Future Directions
 
-Pew Research specializes in tracking public opinion trends but focuses on shorter questionnaires. The CCES’s larger number of more specific questions is more suited for modeling complex relationships like those explored in this paper [@Pew2020].
+To address challenges, future surveys like the CCES could adopt innovations such as:
 
-## Methodological Best Practices
+- **Adaptive Sampling**: Adjusting strategies during data collection improves coverage of underrepresented groups.
+- **Qualitative Data**: Including open-ended questions provides deeper understanding of voter motivations.
+- **Non-Linear Models**: Bayesian hierarchical models improve estimation of subgroup effects, particularly for small populations.
+- **Mobile Platforms**: Mobile-friendly surveys increase participation among younger and low-income groups, addressing access disparities.
 
-Based on the strengths and limitations of the CCES and other surveys, several best practices emerge:
+These enhancements will improve survey accuracy and better capture the complexity of voter behavior.
 
-1. Hybrid Sampling Methods: Combining stratified sampling with random digit dialing or online panel recruitment can improve representativeness.
-
-2. Enhanced Weighting Techniques: Incorporating machine learning algorithms into weighting procedures could reduce bias from hard-to-reach populations.
-
-3. Longitudinal Design: Adding a longitudinal component to surveys like the CCES would allow researchers to track changes in voter behavior over time.
-
-## Future Directions
-
-Future iterations of surveys like the CCES could benefit from integrating administrative data (e.g., tax records or employment data) to validate self-reported responses. Additionally, adopting adaptive sampling techniques that dynamically adjust to underrepresented groups could further enhance data quality. Finally, the incorporation of qualitative components, such as open-ended responses, could provide richer context to quantitative findings.
-
-By adhering to these methodological enhancements, surveys can accurately represent complex socio-political phenomena.
-\newpage
+\newpage 
 
 # References
